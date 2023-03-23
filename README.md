@@ -1,7 +1,7 @@
 # README #
 
-## this project is forked from "bruno.josue.marques@inria.fr"'s SofaCV project
-## update and include new functions to match with my purpose
+* This project is forked from "bruno.josue.marques@inria.fr"'s SofaCV project
+* Include new functions to match with my purpose
 
 ### What is this repository for? ###
 
