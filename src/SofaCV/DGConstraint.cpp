@@ -24,7 +24,7 @@ namespace sofacv
                                         .add<DGConstraintForceField>();
 
     DGConstraintForceField::DGConstraintForceField(sofa::core::behavior::MechanicalState<Vec3Types>* mParent) :
-        d_reconFrame(initData(&d_reconFrame, "3DPoints", "3D points from realsense")),
+        d_reconFrame(initData(&d_reconFrame, "3DPoints", "3D points from realsense", false, true)),
         d_reconPointNum(initData(&d_reconPointNum, 0, "reconPointNum", "number of current 3D cloud points")),
         d_deformableRegi(initData(&d_deformableRegi, false, "d_deformableRegi", "triggering deformable registration")),
         d_visualizeDepth(initData(&d_visualizeDepth, false, "d_visualizeDepth", "triggering visualization of depth map")),
@@ -204,19 +204,12 @@ namespace sofacv
             // knee surface를 구성하는 각 점의 position (ICP의 target으로 사용됨, Surface)
             const VecCoord& ICPTargetPosition = this->mstate->read(sofa::core::ConstVecCoordId::position())->getValue();
 
-            // 실시간으로 현재 Mechanical Model의 각 점 좌표를 받아오는 부분 (힘 방향 계산할 때 사용, Femur)
-            //const VecCoord& mstatePosition = this->mstate->read(sofa::core::ConstVecCoordId::position())->getValue();
+            long pointNum = d_reconPointNum.getValue();        // depth map을 구성하는 점 개수
+            long modelSize = (long)ICPTargetPosition.size();   // knee surface 모델을 구성하는 점 개수
 
-            long pointNum = d_reconPointNum.getValue();  // depth map을 구성하는 점 개수
-            long modelSize = ICPTargetPosition.size();   // knee surface 모델을 구성하는 점 개수
-
-            // ICP 수행하는 부분
-            double* M = (double*)calloc(3 * pointNum, sizeof(double));   // 동적할당
-            double* T = (double*)calloc(3 * modelSize, sizeof(double));  // 동적할당
-            std::vector<std::vector<double>> PCATargetMat;
-            std::vector<double> PCATargetMatX;
-            std::vector<double> PCATargetMatY;
-            std::vector<double> PCATargetMatZ;
+            // ICP가 수행되는 두 point cloud 'list'
+            double* M = (double*)calloc((unsigned long long)3 * pointNum, sizeof(double));   // 동적할당, 8바이트 값으로 캐스팅 수행
+            double* T = (double*)calloc((unsigned long long)3 * modelSize, sizeof(double));  // 동적할당, 8바이트 값으로 캐스팅 수행
 
             // realsense data를 list에 넣는다
             for (int dataInput = 0; dataInput < pointNum; ++dataInput)
@@ -228,6 +221,7 @@ namespace sofacv
             }
 
             // surface data를 list에 넣는다
+            double zMean = 0;  // z 축에 대한 평균 값
             for (int mechanicalInput = 0; mechanicalInput < modelSize; ++mechanicalInput)
             {
                 Real xTest = 0.0, yTest = 0.0, zTest = 0.0;
@@ -235,24 +229,29 @@ namespace sofacv
                 T[mechanicalInput * 3 + 0] = xTest;
                 T[mechanicalInput * 3 + 1] = yTest;
                 T[mechanicalInput * 3 + 2] = zTest;
+                zMean += zTest;
             }
+            zMean /= modelSize;
 
             Matrix R = Matrix::eye(3);
             Matrix t(3, 1);
 
-            // run point-to-point ICP (-1 = no outlier threshold)
+            // run point-to-point ICP
             IcpPointToPoint icp(M, pointNum, 3);
 
-            if (!m_initialRegistration)  // 초기정합을 아직 하지 않은 경우
+            if (!m_initialRegistration)  // 초기정합이 필요한 경우
             {
-                icp.fit(T, modelSize, R, t, -1);
+                icp.fit(T, modelSize, R, t, -1);  // (-1 = no outlier threshold)
                 m_initialRegistration = true;
             }
             else                        // 초기정합이 완료 된 후
             {
-                icp.fit(T, modelSize, R, t, 120);
+                icp.fit(T, modelSize, R, t, 120);  // 120 mm 거리 안의 점들에 대해서만 ICP 적용
             }
 
+            // depth map에 대해 120 mm 안에 존재하는 knee surface 점들
+            std::vector<int32_t> sourceInliers = icp.getRanges(T, modelSize, R, t, 30, 150);
+            // 각 knee surface 점에 대해 가장 가까운 depth map 위 점
             std::vector<int32_t> targetNearestPointsIdx = icp.getNearestIdxs(T, modelSize, R, t);
             d_visualizeForce.setValue(true);  // 외력을 시각화 함
 
@@ -271,23 +270,27 @@ namespace sofacv
             
             // source의 각 점에 적용되는 힘을 계산한다. 현재는 모든 점에 다 힘을 가하지만 알고리즘 업데이트를 통해
             // 딱 필요한 점에만 힘을 가할 수 있도록 해야한다
-            for (int i = 0; i< modelSize; i++)
+            for (int i = 0; i< sourceInliers.size(); i++)
             {
-                sourcePoint[0] = (float)(r00 * T[i * 3 + 0] + r01 * T[i * 3 + 1] + r02 * T[i * 3 + 2] + t0);
-                sourcePoint[1] = (float)(r10 * T[i * 3 + 0] + r11 * T[i * 3 + 1] + r12 * T[i * 3 + 2] + t1);
-                sourcePoint[2] = (float)(r20 * T[i * 3 + 0] + r21 * T[i * 3 + 1] + r22 * T[i * 3 + 2] + t2);
+                int inlierNum = sourceInliers[i];
+                sourcePoint[0] = (float)(r00 * T[inlierNum * 3 + 0] + r01 * T[inlierNum * 3 + 1] + r02 * T[inlierNum * 3 + 2] + t0);
+                sourcePoint[1] = (float)(r10 * T[inlierNum * 3 + 0] + r11 * T[inlierNum * 3 + 1] + r12 * T[inlierNum * 3 + 2] + t1);
+                sourcePoint[2] = (float)(r20 * T[inlierNum * 3 + 0] + r21 * T[inlierNum * 3 + 1] + r22 * T[inlierNum * 3 + 2] + t2);
 
-                targetPoint[0] = (float)M[targetNearestPointsIdx[i] * 3 + 0];
-                targetPoint[1] = (float)M[targetNearestPointsIdx[i] * 3 + 1];
-                targetPoint[2] = (float)M[targetNearestPointsIdx[i] * 3 + 2];
+                if (sourcePoint[2] < zMean)  // 모델의 앞쪽 반에만 알고리즘이 적용될 수 있도록 함
+                {
+                    targetPoint[0] = (float)M[targetNearestPointsIdx[inlierNum] * 3 + 0];
+                    targetPoint[1] = (float)M[targetNearestPointsIdx[inlierNum] * 3 + 1];
+                    targetPoint[2] = (float)M[targetNearestPointsIdx[inlierNum] * 3 + 2];
 
-                // source와 target의 nearest point 사이 거리를 힘으로써 적용한다
-                Real xForce = (Real)targetPoint[0] - sourcePoint[0];  // 나중에 특정 weight를 곱하면크기를 비례해서 키울 수 있음
-                Real yForce = (Real)targetPoint[1] - sourcePoint[1];  // type casting 필요
-                Real zForce = (Real)targetPoint[2] - sourcePoint[2];
+                    // source와 target의 nearest point 사이 거리를 힘으로써 적용한다
+                    Real xForce = ((Real)targetPoint[0] - sourcePoint[0]) * 25;  // 나중에 특정 weight를 곱하면크기를 비례해서 키울 수 있음
+                    Real yForce = ((Real)targetPoint[1] - sourcePoint[1]) * 25;  // type casting 필요
+                    Real zForce = ((Real)targetPoint[2] - sourcePoint[2]) * 25;
 
-                totalForceVec.push_back({ xForce, yForce, zForce });
-                totalIndices.push_back(i);
+                    totalForceVec.push_back({ xForce, yForce, zForce });
+                    totalIndices.push_back(inlierNum);
+                }
             }
 
             d_indices.setValue(totalIndices);
@@ -360,92 +363,53 @@ namespace sofacv
             const VecIndex& indices = d_indices.getValue();
             const VecDeriv& f = d_forces.getValue();
 
-            if (fabs(aSC) < 1.0e-10)  // 가해지는 힘의 크기가 작은 경우
+            vparams->drawTool()->setLightingEnabled(true);
+
+            // drilling position을 시각화하는 부분 (임시로 만든 기능, 추후 개선 필요함)
+            //sofa::defaulttype::Vector3 p1(dilPosition1, dilPosition2, dilPosition3);
+            //sofa::defaulttype::Vector3 p2(30 * dilDirection1 + dilPosition1, 30 * dilDirection2 + dilPosition2, 30 * dilDirection3 + dilPosition3);
+
+            //float norm = static_cast<float>((p2 - p1).norm());
+            //vparams->drawTool()->drawArrow(p2, p1, norm / 20.0f, sofa::helper::types::RGBAColor(0, 1.0f, 0, 1.0f));
+            // drilling position을 시각화하는 부분 끝 (임시로 만든 기능)
+
+            for (unsigned int i = 0; i < indices.size(); i++)
             {
-                //std::vector<sofa::defaulttype::Vector3> points;
-                //for (unsigned int i = 0; i < indices.size(); i++)
-                //{
-                //    Real xx = 0.0, xy = 0.0, xz = 0.0, fx = 0.0, fy = 0.0, fz = 0.0;
+                Real xx = 0.0, xy = 0.0, xz = 0.0, fx = 0.0, fy = 0.0, fz = 0.0;
 
-                //    if (!d_indexFromEnd.getValue())
-                //    {
-                //        if (indices[i] < mstatePosition.size())
-                //        {
-                //            DataTypes::get(xx, xy, xz, mstatePosition[indices[i]]);
-                //        }
-                //        else
-                //        {
-                //            msg_error() << "Draw: error in indices values";
-                //        }
-                //    }
-                //    else
-                //    {
-                //        if ((mstatePosition.size() - indices[i] - 1) < mstatePosition.size() && (mstatePosition.size() - indices[i] - 1) >= 0)
-                //        {
-                //            DataTypes::get(xx, xy, xz, mstatePosition[mstatePosition.size() - indices[i] - 1]);
-                //        }
-                //        else
-                //        {
-                //            msg_error() << "Draw: error in indices values";
-                //        }
-                //    }
-
-                //    DataTypes::get(fx, fy, fz, f[i]);
-                //    points.push_back(sofa::defaulttype::Vector3(xx, xy, xz));
-                //    points.push_back(sofa::defaulttype::Vector3(xx + fx, xy + fy, xz + fz));
-                //}
-                //vparams->drawTool()->drawLines(points, 2, sofa::helper::types::RGBAColor::green());
-            }
-            else  // 가해지는 힘의 크기가 큰 경우
-            {
-                vparams->drawTool()->setLightingEnabled(true);
-
-                // drilling position을 시각화하는 부분 (임시로 만든 기능, 추후 개선 필요함)
-                //sofa::defaulttype::Vector3 p1(dilPosition1, dilPosition2, dilPosition3);
-                //sofa::defaulttype::Vector3 p2(30 * dilDirection1 + dilPosition1, 30 * dilDirection2 + dilPosition2, 30 * dilDirection3 + dilPosition3);
-
-                //float norm = static_cast<float>((p2 - p1).norm());
-                //vparams->drawTool()->drawArrow(p2, p1, norm / 20.0f, sofa::helper::types::RGBAColor(0, 1.0f, 0, 1.0f));
-                // drilling position을 시각화하는 부분 끝 (임시로 만든 기능)
-
-                for (unsigned int i = 0; i < indices.size(); i++)
+                if (!d_indexFromEnd.getValue())
                 {
-                    Real xx = 0.0, xy = 0.0, xz = 0.0, fx = 0.0, fy = 0.0, fz = 0.0;
-
-                    if (!d_indexFromEnd.getValue())
+                    if (indices[i] < mstatePosition.size())
                     {
-                        if (indices[i] < mstatePosition.size())
-                        {
-                            DataTypes::get(xx, xy, xz, mstatePosition[indices[i]]);
-                        }
-                        else
-                        {
-                            msg_error() << "Draw: error in indices values";
-                        }
+                        DataTypes::get(xx, xy, xz, mstatePosition[indices[i]]);
                     }
                     else
                     {
-                        if ((mstatePosition.size() - indices[i] - 1) < mstatePosition.size() && (mstatePosition.size() - indices[i] - 1) >= 0)
-                        {
-                            DataTypes::get(xx, xy, xz, mstatePosition[mstatePosition.size() - indices[i] - 1]);
-                        }
-                        else
-                        {
-                            msg_error() << "Draw: error in indices values";
-                        }
+                        msg_error() << "Draw: error in indices values";
                     }
-
-                    DataTypes::get(fx, fy, fz, f[i]);
-
-                    sofa::defaulttype::Vector3 p1(xx, xy, xz);  // 화살표 시작점
-                        
-                    sofa::defaulttype::Vector3 p2(aSC * fx + xx, aSC * fy + xy, aSC * fz + xz);  //화살표 끝점
-
-                    float norm = static_cast<float>((p2 - p1).norm());  // 화살표 굵기
-
-                    // 화살표를 그린다
-                    vparams->drawTool()->drawArrow(p1, p2, norm / 20.0f, sofa::helper::types::RGBAColor(1.0f, 0.35f, 0.35f, 1.0f));
                 }
+                else
+                {
+                    if ((mstatePosition.size() - indices[i] - 1) < mstatePosition.size() && (mstatePosition.size() - indices[i] - 1) >= 0)
+                    {
+                        DataTypes::get(xx, xy, xz, mstatePosition[mstatePosition.size() - indices[i] - 1]);
+                    }
+                    else
+                    {
+                        msg_error() << "Draw: error in indices values";
+                    }
+                }
+
+                DataTypes::get(fx, fy, fz, f[i]);
+
+                sofa::defaulttype::Vector3 p1(xx, xy, xz);  // 화살표 시작점
+                        
+                sofa::defaulttype::Vector3 p2(aSC * fx + xx, aSC * fy + xy, aSC * fz + xz);  //화살표 끝점
+
+                float norm = static_cast<float>((p2 - p1).norm());  // 화살표 굵기
+
+                // 화살표를 그린다
+                vparams->drawTool()->drawArrow(p1, p2, norm / 20.0f, sofa::helper::types::RGBAColor(1.0f, 0.35f, 0.35f, 1.0f));
             }
         }
         vparams->drawTool()->restoreLastState();

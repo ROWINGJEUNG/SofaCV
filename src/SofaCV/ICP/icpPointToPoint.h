@@ -36,8 +36,11 @@ public:
   // ICP 결과의 error를 측정하기 위한 함수 (only for 3D points)
   double getICPError(double* T, const int32_t T_num, Matrix& R, Matrix& t, const double indist);
 
-  // 최근접점을 list로 반환하는 함수
+  // target에 대해 일정거리 이하에 있는 source 점들을 list로 반환
   std::vector<int32_t> getInliers (double *T,const int32_t T_num,const Matrix &R,const Matrix &t,const double indist);
+
+  // target에 대해 일정범위 안에 있는 source 들을 list로 반환 (3차원에 대해서만 동작함)
+  std::vector<int32_t> getRanges(double* T, const int32_t T_num, const Matrix& R, const Matrix& t, const double min, const double max);
 
   // Source의 각 점에서 가장 가까운 Target 점의 index를 return한다
   std::vector<int32_t> getNearestIdxs(double* T, const int32_t T_num, const Matrix& R, const Matrix& t);

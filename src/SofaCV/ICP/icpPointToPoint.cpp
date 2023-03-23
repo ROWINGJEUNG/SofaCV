@@ -198,8 +198,8 @@ double IcpPointToPoint::getICPError(double* T, const int32_t T_num, Matrix& R, M
     return dist_sum/nact;  // return mean error of ICP
 }
 
-std::vector<int32_t> IcpPointToPoint::getInliers (double *T,const int32_t T_num,const Matrix &R,const Matrix &t,const double indist) {
-
+std::vector<int32_t> IcpPointToPoint::getInliers (double *T,const int32_t T_num,const Matrix &R,const Matrix &t,const double indist) 
+{
   // init inlier vector + query point + query result
   vector<int32_t>            inliers;
   std::vector<float>         query(dim);
@@ -256,6 +256,39 @@ std::vector<int32_t> IcpPointToPoint::getInliers (double *T,const int32_t T_num,
   
   // return vector with inliers
   return inliers;
+}
+
+std::vector<int32_t> IcpPointToPoint::getRanges(double* T, const int32_t T_num, const Matrix& R, const Matrix& t, const double min, const double max)
+{
+    // init inlier vector + query point + query result
+    vector<int32_t>            inliers;
+    std::vector<float>         query(dim);
+    kdtree::KDTreeResultVector neighbor;
+
+    // extract matrix and translation vector
+    double r00 = R.val[0][0]; double r01 = R.val[0][1]; double r02 = R.val[0][2];
+    double r10 = R.val[1][0]; double r11 = R.val[1][1]; double r12 = R.val[1][2];
+    double r20 = R.val[2][0]; double r21 = R.val[2][1]; double r22 = R.val[2][2];
+    double t0 = t.val[0][0]; double t1 = t.val[1][0]; double t2 = t.val[2][0];
+
+    // check for all points if they are inliers
+    for (int32_t i = 0; i < T_num; i++) {
+
+        // transform point according to R|t
+        query[0] = (float)(r00 * T[i * 3 + 0] + r01 * T[i * 3 + 1] + r02 * T[i * 3 + 2] + t0);
+        query[1] = (float)(r10 * T[i * 3 + 0] + r11 * T[i * 3 + 1] + r12 * T[i * 3 + 2] + t1);
+        query[2] = (float)(r20 * T[i * 3 + 0] + r21 * T[i * 3 + 1] + r22 * T[i * 3 + 2] + t2);
+
+        // search nearest neighbor
+        M_tree->n_nearest(query, 1, neighbor);
+
+        // check if it is the given range
+        if (neighbor[0].dis < max && neighbor[0].dis > min)
+            inliers.push_back(i);
+    }
+
+    // return vector with inliers
+    return inliers;
 }
 
 std::vector<int32_t> IcpPointToPoint::getNearestIdxs(double* T, const int32_t T_num, const Matrix& R, const Matrix& t)
