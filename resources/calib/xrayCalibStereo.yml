@@ -1,0 +1,123 @@
+%YAML:1.0
+---
+# 
+# image size in pixels (w, h)
+imsize: !!opencv-matrix
+   rows: 2
+   cols: 1
+   dt: i
+   data: [ 1000, 1000 ]
+# 
+# Intrinsic matrix
+K: !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   data: [ 2000., 0., 4.9999999999999994e+02, 0., 1.9999999999999998e+03,
+       5.0000000000000080e+02, 0., 0., 1. ]
+# 
+# camera's orientation in world coordinates
+R: !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   data: [ -9.9999866548313887e-01, 1.6337167741884097e-03,
+       -1.2013629085914803e-06, -6.6373456314668176e-07,
+       -1.1416273815412191e-03, -9.9999934834302828e-01,
+       -1.6337170810742756e-03, -9.9999801382623921e-01,
+       1.1416269423745184e-03 ]
+# 
+# camera's optical center position in world coordinates
+t: !!opencv-matrix
+   rows: 3
+   cols: 1
+   dt: d
+   data: [ 6.4990165035180491e-03, 4.9944304108399447e+00,
+       -6.2662172821003224e-03 ]
+# 
+# if a non-linear model is used, distortion coefficients
+delta: !!opencv-matrix
+   rows: 0
+   cols: 1
+   dt: d
+   data: []
+# 
+# reprojection error
+error: 0.
+# 
+# Same for second camera if any
+imsize2: !!opencv-matrix
+   rows: 2
+   cols: 1
+   dt: i
+   data: [ 1000, 1000 ]
+K2: !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   data: [ 1.9999999999999986e+03, 0., 5.0000000000000068e+02, 0.,
+       1.9999999999999989e+03, 4.9999999999999932e+02, 0., 0., 1. ]
+R2: !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   data: [ -3.4237522509066887e-01, 9.3956330428450963e-01,
+       -4.9860668268151415e-05, 4.8623481064436039e-04,
+       1.2411520354140720e-04, -9.9999987408555391e-01,
+       -9.3956317979145099e-01, -3.4237520622467454e-01,
+       -4.9934235609683133e-04 ]
+t2: !!opencv-matrix
+   rows: 3
+   cols: 1
+   dt: d
+   data: [ 4.6939251795611270e+00, 1.7106972736797292e+00,
+       8.5884040874653080e-04 ]
+delta2: !!opencv-matrix
+   rows: 0
+   cols: 1
+   dt: d
+   data: []
+error2: 1.6505729286163698e-316
+# 
+# triangulated reprojection error
+stereo_error: 2.3151773873214811e-316
+# 
+# Essential matrix
+E: !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   data: [ 4.4657893696699218e-03, -3.2781893280636489e+00,
+       5.2396179423433234e-03, -3.2765327533667294e+00,
+       -5.6287222595719569e-03, -4.6914430790561887e+00,
+       -1.9651626691877294e-03, 4.6902876286574413e+00,
+       -1.1617765872024358e-03 ]
+# 
+# Fundamental matrix
+F: !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   data: [ -2.7135492364564943e-09, 1.9919273865763258e-06,
+       -1.0009744206230435e-03, 1.9909208014842270e-06,
+       3.4201825758781999e-09, 4.7041560736664238e-03,
+       -9.9171544109361606e-04, -6.6975961767714361e-03, 1. ]
+# 
+# Second Camera's orientation in the 1st camera's coordinates
+Rs: !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   data: [ 3.4396095621284167e-01, -1.0322335487564416e-03,
+       -9.3898338382265767e-01, -9.4367747852019393e-05,
+       9.9999935270858187e-01, -1.1338770416287167e-03,
+       9.3898394645269401e-01, 4.7861917866821391e-04,
+       3.4396063616031125e-01 ]
+# 
+# Second Camera's optical center position in the 1st camera's coordinates
+ts: !!opencv-matrix
+   rows: 3
+   cols: 1
+   dt: d
+   data: [ 4.6902860954342849e+00, 4.4265225633278145e-03,
+       3.2781935686288062e+00 ]

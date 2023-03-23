@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>SofaDataTypes/SofaDataType_cvMat.qml</file>
+        <file>SofaDataTypes/SofaDataType_cvDMatch.qml</file>
+        <file>SofaDataTypes/SofaDataType_cvKeypoint.qml</file>
+	<file>SofaWidgets/ImageFilterWidget.qml</file>
+    </qresource>
+</RCC>

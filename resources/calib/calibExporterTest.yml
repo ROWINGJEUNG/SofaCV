@@ -1,0 +1,41 @@
+%YAML:1.0
+---
+# 
+# image size in pixels (w, h)
+imsize: !!opencv-matrix
+   rows: 2
+   cols: 1
+   dt: i
+   data: [ 1280, 720 ]
+# 
+# Intrinsic matrix
+K: !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   data: [ 1280., 0., 640., 0., 1280., 360., 0., 0., 1. ]
+# 
+# camera's orientation in world coordinates
+R: !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   data: [ 8.9442999999999995e-01, -4.4721000000000000e-01, 0., 0., 0.,
+       -1., 4.4721000000000000e-01, 8.9442999999999995e-01, 0. ]
+# 
+# camera's optical center position in world coordinates
+t: !!opencv-matrix
+   rows: 3
+   cols: 1
+   dt: d
+   data: [ 2.2360679507255554e-01, 4.4721359014511108e-01, 0. ]
+# 
+# if a non-linear model is used, distortion coefficients
+delta: !!opencv-matrix
+   rows: 0
+   cols: 1
+   dt: d
+   data: []
+# 
+# reprojection error
+error: 0.
