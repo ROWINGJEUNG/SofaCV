@@ -362,39 +362,39 @@ namespace sofacv
 
             if (fabs(aSC) < 1.0e-10)  // 가해지는 힘의 크기가 작은 경우
             {
-                std::vector<sofa::defaulttype::Vector3> points;
-                for (unsigned int i = 0; i < indices.size(); i++)
-                {
-                    Real xx = 0.0, xy = 0.0, xz = 0.0, fx = 0.0, fy = 0.0, fz = 0.0;
+                //std::vector<sofa::defaulttype::Vector3> points;
+                //for (unsigned int i = 0; i < indices.size(); i++)
+                //{
+                //    Real xx = 0.0, xy = 0.0, xz = 0.0, fx = 0.0, fy = 0.0, fz = 0.0;
 
-                    if (!d_indexFromEnd.getValue())
-                    {
-                        if (indices[i] < mstatePosition.size())
-                        {
-                            DataTypes::get(xx, xy, xz, mstatePosition[indices[i]]);
-                        }
-                        else
-                        {
-                            msg_error() << "Draw: error in indices values";
-                        }
-                    }
-                    else
-                    {
-                        if ((mstatePosition.size() - indices[i] - 1) < mstatePosition.size() && (mstatePosition.size() - indices[i] - 1) >= 0)
-                        {
-                            DataTypes::get(xx, xy, xz, mstatePosition[mstatePosition.size() - indices[i] - 1]);
-                        }
-                        else
-                        {
-                            msg_error() << "Draw: error in indices values";
-                        }
-                    }
+                //    if (!d_indexFromEnd.getValue())
+                //    {
+                //        if (indices[i] < mstatePosition.size())
+                //        {
+                //            DataTypes::get(xx, xy, xz, mstatePosition[indices[i]]);
+                //        }
+                //        else
+                //        {
+                //            msg_error() << "Draw: error in indices values";
+                //        }
+                //    }
+                //    else
+                //    {
+                //        if ((mstatePosition.size() - indices[i] - 1) < mstatePosition.size() && (mstatePosition.size() - indices[i] - 1) >= 0)
+                //        {
+                //            DataTypes::get(xx, xy, xz, mstatePosition[mstatePosition.size() - indices[i] - 1]);
+                //        }
+                //        else
+                //        {
+                //            msg_error() << "Draw: error in indices values";
+                //        }
+                //    }
 
-                    DataTypes::get(fx, fy, fz, f[i]);
-                    points.push_back(sofa::defaulttype::Vector3(xx, xy, xz));
-                    points.push_back(sofa::defaulttype::Vector3(xx + fx, xy + fy, xz + fz));
-                }
-                vparams->drawTool()->drawLines(points, 2, sofa::helper::types::RGBAColor::green());
+                //    DataTypes::get(fx, fy, fz, f[i]);
+                //    points.push_back(sofa::defaulttype::Vector3(xx, xy, xz));
+                //    points.push_back(sofa::defaulttype::Vector3(xx + fx, xy + fy, xz + fz));
+                //}
+                //vparams->drawTool()->drawLines(points, 2, sofa::helper::types::RGBAColor::green());
             }
             else  // 가해지는 힘의 크기가 큰 경우
             {
