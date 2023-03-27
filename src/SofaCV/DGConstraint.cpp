@@ -4,7 +4,8 @@
 #include <sofa/gl/DrawToolGL.h>
 
 #include <sofa/helper/gl/RAII.h>
-#include <sofa/helper/system/gl.h>
+//#include <sofa/helper/system/gl.h>
+#include <sofa/gl/gl.h>
 #include <sofa/simulation/AnimateBeginEvent.h>
 
 // draw 안에 변수로 들어가는 visualparams를 사용하려면 이 해더를 include 해야한다.
@@ -207,6 +208,19 @@ namespace sofacv
             long pointNum = d_reconPointNum.getValue();        // depth map을 구성하는 점 개수
             long modelSize = (long)ICPTargetPosition.size();   // knee surface 모델을 구성하는 점 개수
 
+            // ICP에는 5개 이상의 점이 필요함. depth map을 구성하는 점 수가 이보다 적다면 에러 발생
+            // 이런 에러를 방지하기 위해 if문 사용
+            if (pointNum < 5)
+            {
+                std::cout << "depth map point is less than 5" << std::endl;
+                d_visualizeForce.setValue(false);
+                return;
+            }
+            else
+            {
+                d_visualizeForce.setValue(true);
+            }
+
             // ICP가 수행되는 두 point cloud 'list'
             double* M = (double*)calloc((unsigned long long)3 * pointNum, sizeof(double));   // 동적할당, 8바이트 값으로 캐스팅 수행
             double* T = (double*)calloc((unsigned long long)3 * modelSize, sizeof(double));  // 동적할당, 8바이트 값으로 캐스팅 수행
@@ -250,7 +264,7 @@ namespace sofacv
             }
 
             // depth map에 대해 120 mm 안에 존재하는 knee surface 점들
-            std::vector<int32_t> sourceInliers = icp.getRanges(T, modelSize, R, t, 30, 150);
+            std::vector<int32_t> sourceInliers = icp.getRanges(T, modelSize, R, t, 5, 130);
             // 각 knee surface 점에 대해 가장 가까운 depth map 위 점
             std::vector<int32_t> targetNearestPointsIdx = icp.getNearestIdxs(T, modelSize, R, t);
             d_visualizeForce.setValue(true);  // 외력을 시각화 함
@@ -284,9 +298,9 @@ namespace sofacv
                     targetPoint[2] = (float)M[targetNearestPointsIdx[inlierNum] * 3 + 2];
 
                     // source와 target의 nearest point 사이 거리를 힘으로써 적용한다
-                    Real xForce = ((Real)targetPoint[0] - sourcePoint[0]) * 25;  // 나중에 특정 weight를 곱하면크기를 비례해서 키울 수 있음
-                    Real yForce = ((Real)targetPoint[1] - sourcePoint[1]) * 25;  // type casting 필요
-                    Real zForce = ((Real)targetPoint[2] - sourcePoint[2]) * 25;
+                    Real xForce = ((Real)targetPoint[0] - sourcePoint[0]) * 100;  // 나중에 특정 weight를 곱하면크기를 비례해서 키울 수 있음
+                    Real yForce = ((Real)targetPoint[1] - sourcePoint[1]) * 100;  // type casting 필요
+                    Real zForce = ((Real)targetPoint[2] - sourcePoint[2]) * 100;
 
                     totalForceVec.push_back({ xForce, yForce, zForce });
                     totalIndices.push_back(inlierNum);
@@ -351,7 +365,7 @@ namespace sofacv
         }
 
         // 모델에 가해지는 힘의 크기와 방향을 시각화하는 부분
-        if (true)
+        if (d_visualizeForce.getValue())
         {
             // arrow size가 0인 경우 바로 return 수행
             const SReal aSC = d_showArrowSize.getValue();  // 화살표 크기
