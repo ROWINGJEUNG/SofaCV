@@ -3,7 +3,7 @@
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/gl/DrawToolGL.h>
 
-#include <sofa/helper/gl/RAII.h>
+#include <sofa/gl/RAII.h>
 //#include <sofa/helper/system/gl.h>
 #include <sofa/gl/gl.h>
 #include <sofa/simulation/AnimateBeginEvent.h>
@@ -264,7 +264,7 @@ namespace sofacv
             }
 
             // depth map에 대해 10~120 mm 안에 존재하는 knee surface 점들
-            std::vector<int32_t> sourceInliers = icp.getRanges(T, modelSize, R, t, 20, 100);
+            std::vector<int32_t> sourceInliers = icp.getRanges(T, modelSize, R, t, 1, 50);
             // 각 knee surface 점에 대해 가장 가까운 depth map 위 점
             std::vector<int32_t> targetNearestPointsIdx = icp.getNearestIdxs(T, modelSize, R, t);
 
@@ -282,6 +282,7 @@ namespace sofacv
             double t0 = t.val[0][0]; double t1 = t.val[1][0]; double t2 = t.val[2][0];
             
             // source의 각 점에 적용되는 힘을 계산한다.
+            std::cout << "number of close points: " << sourceInliers.size() << "/" << modelSize << std::endl;
             for (int i = 0; i< sourceInliers.size(); i++)
             {
                 int inlierNum = sourceInliers[i];
@@ -296,9 +297,9 @@ namespace sofacv
                     targetPoint[2] = (float)M[targetNearestPointsIdx[inlierNum] * 3 + 2];
 
                     // source와 target의 nearest point 사이 거리를 힘으로써 적용한다
-                    Real xForce = ((Real)targetPoint[0] - sourcePoint[0]) * 20;  // 나중에 특정 weight를 곱하면크기를 비례해서 키울 수 있음
-                    Real yForce = ((Real)targetPoint[1] - sourcePoint[1]) * 20;  // Real형으로 type casting 필요
-                    Real zForce = ((Real)targetPoint[2] - sourcePoint[2]) * 20;
+                    Real xForce = ((Real)targetPoint[0] - sourcePoint[0]) * 30;  // 나중에 특정 weight를 곱하면크기를 비례해서 키울 수 있음
+                    Real yForce = ((Real)targetPoint[1] - sourcePoint[1]) * 30;  // Real형으로 type casting 필요
+                    Real zForce = ((Real)targetPoint[2] - sourcePoint[2]) * 30;
 
                     totalForceVec.push_back({ xForce, yForce, zForce });
                     totalIndices.push_back(inlierNum);
