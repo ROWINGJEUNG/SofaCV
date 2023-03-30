@@ -13,7 +13,6 @@
 
 // ICP를 위한 모듈을 읽어온다
 #include "ICP/icpPointToPoint.h"
-#include "PCA_jdg.h"
 
 namespace sofacv
 {
@@ -29,7 +28,7 @@ namespace sofacv
         d_reconPointNum(initData(&d_reconPointNum, 0, "reconPointNum", "number of current 3D cloud points")),
         d_deformableRegi(initData(&d_deformableRegi, false, "d_deformableRegi", "triggering deformable registration")),
         d_visualizeDepth(initData(&d_visualizeDepth, false, "d_visualizeDepth", "triggering visualization of depth map")),
-        d_visualizeForce(initData(&d_visualizeForce, true, "d_visualizeForce", "triggering visualization of external forces")),
+        d_visualizeForce(initData(&d_visualizeForce, false, "d_visualizeForce", "triggering visualization of external forces")),
 
         mstateParent(initLink("mtateParent", "MechanicalState which move using the result of ICP"), mParent),
         //mObjectICPTarget(initLink("ICPTargetLink", "MechanicalState for ICP (target)"), mParent),
@@ -209,11 +208,12 @@ namespace sofacv
             long modelSize = (long)ICPTargetPosition.size();   // knee surface 모델을 구성하는 점 개수
 
             // ICP에는 5개 이상의 점이 필요함. depth map을 구성하는 점 수가 이보다 적다면 에러 발생
-            // 이런 에러를 방지하기 위해 if문 사용
-            if (pointNum < 5)
+            // 프로그램이 막 시작한 단계에서는 ICP를 건너 뛰어야 올바르게 동작합
+            if (pointNum < 5 || m_programInitialization == false)
             {
                 std::cout << "depth map point is less than 5" << std::endl;
                 d_visualizeForce.setValue(false);
+                m_programInitialization = true;
                 return;
             }
             else
@@ -263,11 +263,10 @@ namespace sofacv
                 icp.fit(T, modelSize, R, t, 120);  // 120 mm 거리 안의 점들에 대해서만 ICP 적용
             }
 
-            // depth map에 대해 120 mm 안에 존재하는 knee surface 점들
-            std::vector<int32_t> sourceInliers = icp.getRanges(T, modelSize, R, t, 5, 130);
+            // depth map에 대해 10~120 mm 안에 존재하는 knee surface 점들
+            std::vector<int32_t> sourceInliers = icp.getRanges(T, modelSize, R, t, 20, 100);
             // 각 knee surface 점에 대해 가장 가까운 depth map 위 점
             std::vector<int32_t> targetNearestPointsIdx = icp.getNearestIdxs(T, modelSize, R, t);
-            d_visualizeForce.setValue(true);  // 외력을 시각화 함
 
             // 각 점에 작용되는 외력을 저장하는 vector 선언
             sofa::helper::vector<sofa::type::Vec3d> totalForceVec;
@@ -282,8 +281,7 @@ namespace sofacv
             double r20 = R.val[2][0]; double r21 = R.val[2][1]; double r22 = R.val[2][2];
             double t0 = t.val[0][0]; double t1 = t.val[1][0]; double t2 = t.val[2][0];
             
-            // source의 각 점에 적용되는 힘을 계산한다. 현재는 모든 점에 다 힘을 가하지만 알고리즘 업데이트를 통해
-            // 딱 필요한 점에만 힘을 가할 수 있도록 해야한다
+            // source의 각 점에 적용되는 힘을 계산한다.
             for (int i = 0; i< sourceInliers.size(); i++)
             {
                 int inlierNum = sourceInliers[i];
@@ -298,9 +296,9 @@ namespace sofacv
                     targetPoint[2] = (float)M[targetNearestPointsIdx[inlierNum] * 3 + 2];
 
                     // source와 target의 nearest point 사이 거리를 힘으로써 적용한다
-                    Real xForce = ((Real)targetPoint[0] - sourcePoint[0]) * 100;  // 나중에 특정 weight를 곱하면크기를 비례해서 키울 수 있음
-                    Real yForce = ((Real)targetPoint[1] - sourcePoint[1]) * 100;  // type casting 필요
-                    Real zForce = ((Real)targetPoint[2] - sourcePoint[2]) * 100;
+                    Real xForce = ((Real)targetPoint[0] - sourcePoint[0]) * 20;  // 나중에 특정 weight를 곱하면크기를 비례해서 키울 수 있음
+                    Real yForce = ((Real)targetPoint[1] - sourcePoint[1]) * 20;  // Real형으로 type casting 필요
+                    Real zForce = ((Real)targetPoint[2] - sourcePoint[2]) * 20;
 
                     totalForceVec.push_back({ xForce, yForce, zForce });
                     totalIndices.push_back(inlierNum);

@@ -90,6 +90,7 @@ namespace sofacv
 
 		// initial registration 여부를 확인하기 위한 변수
 		bool m_initialRegistration{ false };
+		bool m_programInitialization{ false };
 
 		// realSense에서 발송된 depth map data
 		cv::Mat realSenseData;
