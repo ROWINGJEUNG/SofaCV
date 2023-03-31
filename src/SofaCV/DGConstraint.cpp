@@ -297,9 +297,9 @@ namespace sofacv
                     targetPoint[2] = (float)M[targetNearestPointsIdx[inlierNum] * 3 + 2];
 
                     // source와 target의 nearest point 사이 거리를 힘으로써 적용한다
-                    Real xForce = ((Real)targetPoint[0] - sourcePoint[0]) * 30;  // 나중에 특정 weight를 곱하면크기를 비례해서 키울 수 있음
-                    Real yForce = ((Real)targetPoint[1] - sourcePoint[1]) * 30;  // Real형으로 type casting 필요
-                    Real zForce = ((Real)targetPoint[2] - sourcePoint[2]) * 30;
+                    Real xForce = ((Real)targetPoint[0] - sourcePoint[0]) * 10;  // 나중에 특정 weight를 곱하면크기를 비례해서 키울 수 있음
+                    Real yForce = ((Real)targetPoint[1] - sourcePoint[1]) * 10;  // Real형으로 type casting 필요
+                    Real zForce = ((Real)targetPoint[2] - sourcePoint[2]) * 10;
 
                     totalForceVec.push_back({ xForce, yForce, zForce });
                     totalIndices.push_back(inlierNum);

@@ -223,13 +223,13 @@ namespace sofacv
             if (forceX > 0)  // PCA vector의 방향을 항상 일정하게 유지하기 위해 사용
                 forceWeightPercentage1 *= -1;
 
-            Real xForce = forceX * 10 * forceWeightPercentage1 * forceWeight;
-            Real yForce = forceY * 10 * forceWeightPercentage1 * forceWeight;
-            Real zForce = forceZ * 10 * forceWeightPercentage1 * forceWeight;
+            Real xForce = forceX * 15 * forceWeightPercentage1 * forceWeight;
+            Real yForce = forceY * 15 * forceWeightPercentage1 * forceWeight;
+            Real zForce = forceZ * 15 * forceWeightPercentage1 * forceWeight;
 
-            Real xForce2 = -forceX * 40 * forceWeightPercentage1 * forceWeight;
-            Real yForce2 = -forceY * 40 * forceWeightPercentage1 * forceWeight;
-            Real zForce2 = -forceZ * 40 * forceWeightPercentage1 * forceWeight;
+            Real xForce2 = -forceX * 70 * forceWeightPercentage1 * forceWeight;
+            Real yForce2 = -forceY * 70 * forceWeightPercentage1 * forceWeight;
+            Real zForce2 = -forceZ * 70 * forceWeightPercentage1 * forceWeight;
 
             if (forceX > 0)  // PCA vector의 방향을 항상 일정하게 유지하기 위해 사용
                 forceWeightPercentage1 *= -1;
