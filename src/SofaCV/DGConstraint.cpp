@@ -26,6 +26,7 @@ namespace sofacv
     DGConstraintForceField::DGConstraintForceField(sofa::core::behavior::MechanicalState<Vec3Types>* mParent) :
         d_reconFrame(initData(&d_reconFrame, "3DPoints", "3D points from realsense", false, true)),
         d_reconPointNum(initData(&d_reconPointNum, 0, "reconPointNum", "number of current 3D cloud points")),
+        d_depthModelSimilarity(initData(&d_depthModelSimilarity, 0, "depthModelSimilarity", "Num of close points bet. depthmap and 3D surface model")),
         d_deformableRegi(initData(&d_deformableRegi, false, "d_deformableRegi", "triggering deformable registration")),
         d_visualizeDepth(initData(&d_visualizeDepth, false, "d_visualizeDepth", "triggering visualization of depth map")),
         d_visualizeForce(initData(&d_visualizeForce, false, "d_visualizeForce", "triggering visualization of external forces")),
@@ -283,6 +284,8 @@ namespace sofacv
             
             // source의 각 점에 적용되는 힘을 계산한다.
             std::cout << "number of close points: " << sourceInliers.size() << "/" << modelSize << std::endl;
+            d_depthModelSimilarity.setValue(sourceInliers.size());  // 외부 class로 값을 넘겨주기 위한 코드
+
             for (int i = 0; i< sourceInliers.size(); i++)
             {
                 int inlierNum = sourceInliers[i];
@@ -297,9 +300,9 @@ namespace sofacv
                     targetPoint[2] = (float)M[targetNearestPointsIdx[inlierNum] * 3 + 2];
 
                     // source와 target의 nearest point 사이 거리를 힘으로써 적용한다
-                    Real xForce = ((Real)targetPoint[0] - sourcePoint[0]) * 10;  // 나중에 특정 weight를 곱하면크기를 비례해서 키울 수 있음
-                    Real yForce = ((Real)targetPoint[1] - sourcePoint[1]) * 10;  // Real형으로 type casting 필요
-                    Real zForce = ((Real)targetPoint[2] - sourcePoint[2]) * 10;
+                    Real xForce = ((Real)targetPoint[0] - sourcePoint[0]) * 15;  // 나중에 특정 weight를 곱하면크기를 비례해서 키울 수 있음
+                    Real yForce = ((Real)targetPoint[1] - sourcePoint[1]) * 15;  // Real형으로 type casting 필요
+                    Real zForce = ((Real)targetPoint[2] - sourcePoint[2]) * 15;
 
                     totalForceVec.push_back({ xForce, yForce, zForce });
                     totalIndices.push_back(inlierNum);

@@ -56,8 +56,9 @@ namespace sofacv
 		// 외력이 변경되었을 때 호출되는 함수
 		void doUpdateInternal() override {}
 
-		sofa::Data<bool> d_deformableRegi;   // if true, do deformable registration
-		sofa::Data<bool> d_visualizeForce;   // if true, visualize current external forces
+		sofa::Data<bool> d_deformableRegi;       // if true, do deformable registration
+		sofa::Data<bool> d_visualizeForce;       // if true, visualize current external forces
+		sofa::Data<int> d_depthModelSimilarity;  // depth map과 3D model사이 inliner 점 개수 -> DGConstraint에서 받아옴
 
 	protected:
 		double forceWeightPercentage1{1.0};

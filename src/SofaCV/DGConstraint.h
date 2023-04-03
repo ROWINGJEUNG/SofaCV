@@ -69,11 +69,12 @@ namespace sofacv
 		// 외력이 변경되었을 때 호출되는 함수
 		void doUpdateInternal() override {}
 				
-		sofa::Data<cvMat> d_reconFrame;      // depath map data
-		sofa::Data<int> d_reconPointNum;     // depth map을 구성하는 점들의 개수
-		sofa::Data<bool> d_deformableRegi;   // if true, do deformable registration
-		sofa::Data<bool> d_visualizeDepth;   // if true, visualize current depth map
-		sofa::Data<bool> d_visualizeForce;   // if true, visualize current external forces
+		sofa::Data<cvMat> d_reconFrame;          // depath map data
+		sofa::Data<int> d_reconPointNum;         // depth map을 구성하는 점들의 개수
+		sofa::Data<int> d_depthModelSimilarity;  // depth map과 3D model사이 inliner 점 개수 -> femur에 가하는 힘 제어위해 사용
+		sofa::Data<bool> d_deformableRegi;       // if true, do deformable registration
+		sofa::Data<bool> d_visualizeDepth;       // if true, visualize current depth map
+		sofa::Data<bool> d_visualizeForce;       // if true, visualize current external forces
 
 	protected:
 		// ICP의 결과를 적용할 MechanicalObject
