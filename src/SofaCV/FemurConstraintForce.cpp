@@ -181,83 +181,95 @@ namespace sofacv
     {
         sofa::helper::AdvancedTimer::stepBegin("FemurConstraintForce");
 
-        // registration 관련 기능
-        int forceTrigger = d_depthModelSimilarity.getValue();
-
         if (d_deformableRegi.getValue())
         {
-            if (forceTrigger > 140)   // 이미 충분히 변형된 경우
+            // knee surface를 구성하는 각 점의 position (ICP의 target으로 사용됨, Surface)
+            const VecCoord& ICPTargetPosition = this->mstate->read(sofa::core::ConstVecCoordId::position())->getValue();
+
+            long modelSize = (long)ICPTargetPosition.size();   // knee surface 모델을 구성하는 점 개수
+            std::vector<std::vector<double>> PCATargetMat;
+            std::vector<double> PCATargetMatX;
+            std::vector<double> PCATargetMatY;
+            std::vector<double> PCATargetMatZ;
+
+            for (int mechanicalInput = 0; mechanicalInput < modelSize; ++mechanicalInput)
             {
-                sofa::helper::vector<sofa::type::Vec3d> totalForceVec;
-                sofa::core::topology::BaseMeshTopology::VerticesAroundVertex totalIndices;
-
-                totalForceVec.push_back({ 0, 0, 0 });
-                totalIndices.push_back(0);
-
-                d_indices.setValue(totalIndices);
-                d_forces.setValue(totalForceVec);
+                Real xTest = 0.0, yTest = 0.0, zTest = 0.0;
+                DataTypes::get(xTest, yTest, zTest, ICPTargetPosition[mechanicalInput]);
+                PCATargetMatX.push_back(xTest);
+                PCATargetMatY.push_back(yTest);
+                PCATargetMatZ.push_back(zTest);
             }
-            else  // 변형이 계속 필요할 때
-            {
-                // knee surface를 구성하는 각 점의 position (ICP의 target으로 사용됨, Surface)
-                const VecCoord& ICPTargetPosition = this->mstate->read(sofa::core::ConstVecCoordId::position())->getValue();
+            PCATargetMat.push_back(PCATargetMatX);
+            PCATargetMat.push_back(PCATargetMatY);
+            PCATargetMat.push_back(PCATargetMatZ);
 
-                long modelSize = (long)ICPTargetPosition.size();   // knee surface 모델을 구성하는 점 개수
-                std::vector<std::vector<double>> PCATargetMat;
-                std::vector<double> PCATargetMatX;
-                std::vector<double> PCATargetMatY;
-                std::vector<double> PCATargetMatZ;
+            std::vector<double> w1;
+            std::vector<double> w2;
+            std::vector<double> w3;
+            double evalue1, evalue2, evalue3;
+            pcapc12(PCATargetMat, &w1, &w2, &w3, evalue1, evalue2, evalue3);
 
-                for (int mechanicalInput = 0; mechanicalInput < modelSize; ++mechanicalInput)
-                {
-                    Real xTest = 0.0, yTest = 0.0, zTest = 0.0;
-                    DataTypes::get(xTest, yTest, zTest, ICPTargetPosition[mechanicalInput]);
-                    PCATargetMatX.push_back(xTest);
-                    PCATargetMatY.push_back(yTest);
-                    PCATargetMatZ.push_back(zTest);
-                }
-                PCATargetMat.push_back(PCATargetMatX);
-                PCATargetMat.push_back(PCATargetMatY);
-                PCATargetMat.push_back(PCATargetMatZ);
+            // 굽히기 위해 필요한 힘
+            Real PCAbase = sqrt(w3[0] * w3[0] + w3[1] * w3[1] + w3[2] * w3[2]);
+            Real forceX = w3[0] / PCAbase;
+            Real forceY = w3[1] / PCAbase;
+            Real forceZ = w3[2] / PCAbase;
 
-                std::vector<double> w1;
-                std::vector<double> w2;
-                std::vector<double> w3;
-                double evalue1, evalue2, evalue3;
-                pcapc12(PCATargetMat, &w1, &w2, &w3, evalue1, evalue2, evalue3);
+            // 평행이동을 맞추기 위해 필요한 힘
+            Real PCAbaseW1 = sqrt(w1[0] * w1[0] + w1[1] * w1[1] + w1[2] * w1[2]);
+            Real forceXW1 = w1[0] / PCAbaseW1;
+            Real forceYW1 = w1[1] / PCAbaseW1;
+            Real forceZW1 = w1[2] / PCAbaseW1;
 
-                Real PCAbase = sqrt(w3[0] * w3[0] + w3[1] * w3[1] + w3[2] * w3[2]);
-                Real forceX = w3[0] / PCAbase;
-                Real forceY = w3[1] / PCAbase;
-                Real forceZ = w3[2] / PCAbase;
+            // 각 점에 작용되는 외력을 저장하는 vector 선언
+            sofa::helper::vector<sofa::type::Vec3d> totalForceVec;
+            sofa::core::topology::BaseMeshTopology::VerticesAroundVertex totalIndices;
 
-                // 각 점에 작용되는 외력을 저장하는 vector 선언
-                sofa::helper::vector<sofa::type::Vec3d> totalForceVec;
-                sofa::core::topology::BaseMeshTopology::VerticesAroundVertex totalIndices;
+            if (forceX > 0)  // PCA vector의 방향을 항상 일정하게 유지하기 위해 사용
+                forceWeightPercentage1 *= -1;
 
-                if (forceX > 0)  // PCA vector의 방향을 항상 일정하게 유지하기 위해 사용
-                    forceWeightPercentage1 *= -1;
+            if (forceXW1 < 0)  // PCA vector의 방향을 항상 일정하게 유지하기 위해 사용
+                forceWeightPercentage2 *= -1;
 
-                Real xForce = forceX * 15 * forceWeightPercentage1 * forceWeight;
-                Real yForce = forceY * 15 * forceWeightPercentage1 * forceWeight;
-                Real zForce = forceZ * 15 * forceWeightPercentage1 * forceWeight;
+            int current_depthModelSimilarity = d_depthModelSimilarity.getValue();
+            if (pre_depthModelSimilarity < current_depthModelSimilarity)
+                forceWeight *= 0.95;  // registration 정확도가 높아지면 일부 힘 줄임
+            else
+                forceWeight *= 1.05;  // registration 정확도가 낮아지면 일부 힘 높임
 
-                Real xForce2 = -forceX * 60 * forceWeightPercentage1 * forceWeight;
-                Real yForce2 = -forceY * 60 * forceWeightPercentage1 * forceWeight;
-                Real zForce2 = -forceZ * 60 * forceWeightPercentage1 * forceWeight;
+            Real xForce = forceX * 40 * forceWeightPercentage1 * forceWeight;
+            Real yForce = forceY * 40 * forceWeightPercentage1 * forceWeight;
+            Real zForce = forceZ * 40 * forceWeightPercentage1 * forceWeight;
 
-                if (forceX > 0)  // PCA vector의 방향을 항상 일정하게 유지하기 위해 사용
-                    forceWeightPercentage1 *= -1;
+            Real xForce2 = -forceX * 120 * forceWeightPercentage1 * forceWeight;
+            Real yForce2 = -forceY * 120 * forceWeightPercentage1 * forceWeight;
+            Real zForce2 = -forceZ * 120 * forceWeightPercentage1 * forceWeight;
 
-                totalForceVec.push_back({ xForce, yForce, zForce });
-                totalForceVec.push_back({ xForce2, yForce2, zForce2 });
-                totalIndices.push_back(0);
-                totalIndices.push_back(46);
+            Real xForce3 = forceXW1 * 20 * forceWeightPercentage2 * forceWeight;
+            Real yForce3 = forceYW1 * 20 * forceWeightPercentage2 * forceWeight;
+            Real zForce3 = forceZW1 * 20 * forceWeightPercentage2 * forceWeight;
 
-                d_indices.setValue(totalIndices);
-                d_forces.setValue(totalForceVec);
-            }
+            if (forceX > 0)  // PCA vector의 방향을 항상 일정하게 유지하기 위해 사용
+                forceWeightPercentage1 *= -1;
+
+            if (forceXW1 < 0)  // PCA vector의 방향을 항상 일정하게 유지하기 위해 사용
+                forceWeightPercentage2 *= -1;
+
+            totalForceVec.push_back({ xForce, yForce, zForce });
+            totalForceVec.push_back({ xForce2, yForce2, zForce2 });
+            totalForceVec.push_back({ xForce3, yForce3, zForce3 });
+            totalIndices.push_back(0);
+            totalIndices.push_back(46);
+            totalIndices.push_back(46);
+
+            d_indices.setValue(totalIndices);
+            d_forces.setValue(totalForceVec);
+
+            // registration weight 결정하기 위한 요소 저장
+            pre_depthModelSimilarity = current_depthModelSimilarity;
         }
+
         sofa::helper::AdvancedTimer::stepEnd("FemurConstraintForce");
 
     }

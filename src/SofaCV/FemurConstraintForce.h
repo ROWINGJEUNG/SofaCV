@@ -61,8 +61,10 @@ namespace sofacv
 		sofa::Data<int> d_depthModelSimilarity;  // depth map과 3D model사이 inliner 점 개수 -> DGConstraint에서 받아옴
 
 	protected:
-		double forceWeightPercentage1{1.0};
+		double forceWeightPercentage1{ 1.0 };
+		double forceWeightPercentage2{ 1.0 };
 		double forceWeight{ 100.0 };
+		int pre_depthModelSimilarity { 0 };
 		// Timer 설정에 필요한 함수 및 변수들
 		bool m_hasScheduler{ false };  /// If this grabber is controlled by a scheduler
 		virtual void handleEvent(sofa::core::objectmodel::Event* e) override;
