@@ -226,35 +226,42 @@ namespace sofacv
             sofa::helper::vector<sofa::type::Vec3d> totalForceVec;
             sofa::core::topology::BaseMeshTopology::VerticesAroundVertex totalIndices;
 
-            if (forceX > 0)  // PCA vector의 방향을 항상 일정하게 유지하기 위해 사용
+            if (forceX > 0)    // PCA vector W3의 방향을 항상 일정하게 유지하기 위해 사용
                 forceWeightPercentage1 *= -1;
 
-            if (forceXW1 < 0)  // PCA vector의 방향을 항상 일정하게 유지하기 위해 사용
+            if (forceXW1 < 0)  // PCA vector W1 방향을 항상 일정하게 유지하기 위해 사용
                 forceWeightPercentage2 *= -1;
 
             int current_depthModelSimilarity = d_depthModelSimilarity.getValue();
             if (pre_depthModelSimilarity < current_depthModelSimilarity)
-                forceWeight *= 0.95;  // registration 정확도가 높아지면 일부 힘 줄임
+                forceWeight *= 0.97;  // registration 정확도가 높아지면 일부 힘 줄임
             else
-                forceWeight *= 1.05;  // registration 정확도가 낮아지면 일부 힘 높임
+                forceWeight *= 1.03;  // registration 정확도가 낮아지면 일부 힘 높임
 
-            Real xForce = forceX * 40 * forceWeightPercentage1 * forceWeight;
-            Real yForce = forceY * 40 * forceWeightPercentage1 * forceWeight;
-            Real zForce = forceZ * 40 * forceWeightPercentage1 * forceWeight;
+            if (forceWeight > 100.0)  // force의 최대 weight는 120을 넘지 못하도록 함
+                forceWeight = 100.0;
 
-            Real xForce2 = -forceX * 120 * forceWeightPercentage1 * forceWeight;
-            Real yForce2 = -forceY * 120 * forceWeightPercentage1 * forceWeight;
-            Real zForce2 = -forceZ * 120 * forceWeightPercentage1 * forceWeight;
+            // 7 100 7 일 때 50 150 50사용
+            Real xForce = forceX * 50 * forceWeightPercentage1 * forceWeight;
+            Real yForce = forceY * 50 * forceWeightPercentage1 * forceWeight;
+            Real zForce = forceZ * 50 * forceWeightPercentage1 * forceWeight;
 
-            Real xForce3 = forceXW1 * 20 * forceWeightPercentage2 * forceWeight;
-            Real yForce3 = forceYW1 * 20 * forceWeightPercentage2 * forceWeight;
-            Real zForce3 = forceZW1 * 20 * forceWeightPercentage2 * forceWeight;
+            Real xForce2 = -forceX * 150 * forceWeightPercentage1 * forceWeight;
+            Real yForce2 = -forceY * 150 * forceWeightPercentage1 * forceWeight;
+            Real zForce2 = -forceZ * 150 * forceWeightPercentage1 * forceWeight;
 
-            if (forceX > 0)  // PCA vector의 방향을 항상 일정하게 유지하기 위해 사용
-                forceWeightPercentage1 *= -1;
+            Real xForce3 = forceXW1 * 50 * forceWeightPercentage2 * forceWeight;
+            Real yForce3 = forceYW1 * 50 * forceWeightPercentage2 * forceWeight;
+            Real zForce3 = forceZW1 * 50 * forceWeightPercentage2 * forceWeight;
 
-            if (forceXW1 < 0)  // PCA vector의 방향을 항상 일정하게 유지하기 위해 사용
-                forceWeightPercentage2 *= -1;
+            if (xForce2 > 0 && yForce2 > 0 && yForce2 > xForce2)
+            {
+                xForce = 0; yForce = 0; zForce = 0; xForce2 = 0; yForce2 = 0; zForce2 = 0;
+                xForce3 = 0; yForce3 = 0; zForce3 = 0;
+            }
+
+            forceWeightPercentage1 = 1;  // W3을 위한 값 초기화
+            forceWeightPercentage2 = 1;  // W1을 위한 값 초기화
 
             totalForceVec.push_back({ xForce, yForce, zForce });
             totalForceVec.push_back({ xForce2, yForce2, zForce2 });
@@ -268,6 +275,17 @@ namespace sofacv
 
             // registration weight 결정하기 위한 요소 저장
             pre_depthModelSimilarity = current_depthModelSimilarity;
+            d_visualizeForce.setValue(true);  // 힘을 시각화 함
+        }
+        else  // 변형이 충분히 되어서 필요 없을 때 Femur에 더이상 힘을 주지 않는다
+        {
+            sofa::helper::vector<sofa::type::Vec3d> totalForceVec;
+            sofa::core::topology::BaseMeshTopology::VerticesAroundVertex totalIndices;
+            totalForceVec.push_back({ 0, 0, 0 });
+            totalIndices.push_back(0);
+            d_indices.setValue(totalIndices);
+            d_forces.setValue(totalForceVec);
+            d_visualizeForce.setValue(false);  // 힘을 시각화 하지 않음
         }
 
         sofa::helper::AdvancedTimer::stepEnd("FemurConstraintForce");

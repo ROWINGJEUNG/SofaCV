@@ -265,7 +265,7 @@ namespace sofacv
             }
 
             // depth map에 대해 10~120 mm 안에 존재하는 knee surface 점들
-            std::vector<int32_t> sourceInliers = icp.getRanges(T, modelSize, R, t, 1, 50);
+            std::vector<int32_t> sourceInliers = icp.getRanges(T, modelSize, R, t, 0.1, 10);
             // 각 knee surface 점에 대해 가장 가까운 depth map 위 점
             std::vector<int32_t> targetNearestPointsIdx = icp.getNearestIdxs(T, modelSize, R, t);
 
@@ -299,10 +299,10 @@ namespace sofacv
                     targetPoint[1] = (float)M[targetNearestPointsIdx[inlierNum] * 3 + 1];
                     targetPoint[2] = (float)M[targetNearestPointsIdx[inlierNum] * 3 + 2];
 
-                    // source와 target의 nearest point 사이 거리를 힘으로써 적용한다
-                    Real xForce = ((Real)targetPoint[0] - sourcePoint[0]) * 50;  // 나중에 특정 weight를 곱하면크기를 비례해서 키울 수 있음
-                    Real yForce = ((Real)targetPoint[1] - sourcePoint[1]) * 50;  // Real형으로 type casting 필요
-                    Real zForce = ((Real)targetPoint[2] - sourcePoint[2]) * 50;
+                    // source와 target의 nearest point 사이 거리를 힘으로써 적용한다 7 100 7 일 때 80
+                    Real xForce = ((Real)targetPoint[0] - sourcePoint[0]) * 100;  // 나중에 특정 weight를 곱하면크기를 비례해서 키울 수 있음
+                    Real yForce = ((Real)targetPoint[1] - sourcePoint[1]) * 100;  // Real형으로 type casting 필요
+                    Real zForce = ((Real)targetPoint[2] - sourcePoint[2]) * 100;
 
                     totalForceVec.push_back({ xForce, yForce, zForce });
                     totalIndices.push_back(inlierNum);
