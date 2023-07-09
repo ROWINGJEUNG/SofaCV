@@ -41,7 +41,7 @@ SOFA_DECL_CLASS(VideoGrabber)
 static int VideoGrabberClass =
     sofa::core::RegisterObject("OpenCV-based component reading mono and stereo videos").add<VideoGrabber>();
 
-VideoGrabber::VideoGrabber()
+VideoGrabber::VideoGrabber(sofa::core::behavior::MechanicalState<Vec3Types>* mParent)
     : BaseFrameGrabber(),
       // 초기 카메라 in
       d_camIdx(initData(&d_camIdx, 0, "cam_index", "camera device index")),
@@ -58,10 +58,15 @@ VideoGrabber::VideoGrabber()
     d_boardPosErr(initData(&d_boardPosErr, 0.0, "board_Pos_Err", "tracker to board pos error")),
     d_toolPos(initData(&d_toolPos, "tool_Pos", "tracker to board pos")),
     d_toolPosErr(initData(&d_toolPosErr, 0.0, "tool_Pos_Err", "tracker to tool pos error")),
+
     m_RSalign(RS2_STREAM_COLOR),
     d_reconPointNum(initData(&d_reconPointNum, 0, "reconPointNum", "number of current 3D cloud points")),
     d_deformableRegi(initData(&d_deformableRegi, false, "d_deformableRegi", "triggering deformable registration")),
-    d_visualizeDepth(initData(&d_visualizeDepth, false, "d_visualizeDepth", "triggering visualization of depth map"))
+    d_visualizeDepth(initData(&d_visualizeDepth, false, "d_visualizeDepth", "triggering visualization of depth map")),
+
+    // virtual depth map 관련 링크 초기화
+    d_vDepthMap(initData(&d_vDepthMap, "d_vDepthMap", "position coordinates of virtual depth maps"))
+    //mVirtualDepthState(initLink("mVirtualDepthState", "MechanicalState used for virtual depth map"), mParent)
 {
   f_listening.setValue(true);
 
@@ -92,8 +97,7 @@ void VideoGrabber::init()
   d_dimensions.setValue(dims);  // BaseFrameGrabber에 정의된 d_dimensions 설정 (output)
 
   for (int s = 0; s < 10; s++) m_RSpipe.wait_for_frames();  // 자동 노출 조정 때문에 수행
-  // Realsense 초기화 관련 코드 끝
-
+  
   addInput(&d_camIdx);
   addInput(&d_paused);
 
@@ -112,6 +116,7 @@ void VideoGrabber::init()
   addOutput(&d_visualizeDepth);
 
   BaseFrameGrabber::init();
+  //mVirtualDepthState.set(dynamic_cast<sofa::core::behavior::MechanicalState<Vec3Types>*>(getContext()->getMechanicalState()));
   update();
 }
 
@@ -152,35 +157,50 @@ void VideoGrabber::grabFrame()
   int numPoint = 0;
   reconPoints = cv::Mat::zeros(1, pointSize, CV_64FC3);
 
-//#pragma omp parallel for private(i) default(none) shared(vertices, reconPoints, Texture_Coord, New_Texture) reduction(+:numPoint)
-  for (int i = 0; i < pointSize; ++i)
+  // Virtual depth map을 사용할 때
+  VecCoord3 vDepthMapData = d_vDepthMap.getValue();
+  std::cout << "virtual depth size: " << vDepthMapData.size() << std::endl;
+  for (int i = 0; i < vDepthMapData.size(); ++i)
   {
-      double _z = double(vertices[i].z) * 1000;
+      double xTest = 0.0, yTest = 0.0, zTest = 0.0;
+      xTest = vDepthMapData[i][0];
+      yTest = vDepthMapData[i][1];
+      zTest = vDepthMapData[i][2];
 
-      if (_z > 300.0 && _z < 500.0)  // 배경과 같은 outlier 제거
-      {
-          // Normals to Texture Coordinates conversion
-          int x_value = std::min(std::max(int(Texture_Coord[i].u * width + .5f), 0), width - 1);
-          int y_value = std::min(std::max(int(Texture_Coord[i].v * height + .5f), 0), height - 1);
-
-          int bytes = x_value * bytesPerPixel;    // Get # of bytes per pixel
-          int strides = y_value * strideInBytes;  // Get line width in bytes
-          int Text_Index = (bytes + strides);
-
-          int NT1 = New_Texture[Text_Index];      // RGB color of current point
-          int NT2 = New_Texture[Text_Index + 1];  // RGB color of current point
-          int NT3 = New_Texture[Text_Index + 2];  // RGB color of current point
-
-          // color가 검은색이 아닌 경우만 point의 3D coordinate를 정의한다.
-          if (NT1 > 50 && NT2 > 50 && NT3 > 50)
-          {
-              double _x = double(vertices[i].x) * 1000;
-              double _y = double(vertices[i].y) * 1000;
-              reconPoints.at<cv::Vec3d>(cv::Point(numPoint, 0)) = cv::Vec3d(_x, _y, _z);
-              numPoint += 1;
-          }
-      }
+      reconPoints.at<cv::Vec3d>(cv::Point(numPoint, 0)) = cv::Vec3d(xTest, yTest, zTest);
+      numPoint += 1;
   }
+  std::cout << "point Num: " << numPoint << std::endl;
+
+  //// Real depth map을 사용할 때
+  //for (int i = 0; i < pointSize; ++i)
+  //{
+  //    double _z = double(vertices[i].z) * 1000;
+
+  //    if (_z > 300.0 && _z < 500.0)  // 배경과 같은 outlier 제거
+  //    {
+  //        // Normals to Texture Coordinates conversion
+  //        int x_value = std::min(std::max(int(Texture_Coord[i].u * width + .5f), 0), width - 1);
+  //        int y_value = std::min(std::max(int(Texture_Coord[i].v * height + .5f), 0), height - 1);
+
+  //        int bytes = x_value * bytesPerPixel;    // Get # of bytes per pixel
+  //        int strides = y_value * strideInBytes;  // Get line width in bytes
+  //        int Text_Index = (bytes + strides);
+
+  //        int NT1 = New_Texture[Text_Index];      // RGB color of current point
+  //        int NT2 = New_Texture[Text_Index + 1];  // RGB color of current point
+  //        int NT3 = New_Texture[Text_Index + 2];  // RGB color of current point
+
+  //        // color가 검은색이 아닌 경우만 point의 3D coordinate를 정의한다.
+  //        if (NT1 > 50 && NT2 > 50 && NT3 > 50)
+  //        {
+  //            double _x = double(vertices[i].x) * 1000;
+  //            double _y = double(vertices[i].y) * 1000;
+  //            reconPoints.at<cv::Vec3d>(cv::Point(numPoint, 0)) = cv::Vec3d(_x, _y, _z);
+  //            numPoint += 1;
+  //        }
+  //    }
+  //}
 
   // 이미지 정보 업데이트
   m.lock();
@@ -193,8 +213,8 @@ void VideoGrabber::grabFrame()
       image.release();
   }
 
-  // 3D recon point 정보 업데이트 (10,000개 이상의 3D point 있을 때만 작동) 
-  if (numPoint>10000)
+  // 3D recon point 정보 업데이트 (10,000개 이상의 3D point 있을 때만 작동)
+  if (numPoint > 10000)
   {
       int& finalNumPoint = *d_reconPointNum.beginEdit();
       finalNumPoint = numPoint;

@@ -31,6 +31,20 @@
 #include <sofa/core/objectmodel/DataFileName.h>
 #include "BaseFrameGrabber.h"
 
+// data type 정의하기 위한 헤더 가져옴
+#include <sofa/defaulttype/Vec.h>
+#include <sofa/defaulttype/VecTypes.h>
+using sofa::defaulttype::Vec3Types;
+using Coord3 = sofa::defaulttype::Vector3;
+using VecCoord3 = sofa::helper::vector<Coord3>;
+
+// 기타 필요 SOFA 헤더 가져옴
+#include <SofaBaseVisual/VisualModelImpl.h>
+#include <sofa/helper/OptionsGroup.h>
+#include <sofa/helper/Quater.h>
+#include <sofa/helper/AdvancedTimer.h>
+#include <SofaBoundaryCondition/FixedConstraint.h>
+
 #include <opencv2/opencv.hpp>
 
 #include <mutex>
@@ -82,14 +96,27 @@ class SOFA_SOFACV_API VideoGrabber : public BaseFrameGrabber
   sofa::Data<bool> d_deformableRegi;  // deformable registration 진행 여부
   sofa::Data<bool> d_visualizeDepth;  // depth map을 구성하는 point 시각화 여부
 
+  // virtual depth map을 받아오기 위한 변수
+  sofa::Data<VecCoord3> d_vDepthMap;
+
  public:
-  VideoGrabber();
+  VideoGrabber(sofa::core::behavior::MechanicalState<Vec3Types>* mParent = nullptr);
   virtual ~VideoGrabber() override;
 
   void init() override;      // class 초기화에 사용하면 됨
   void doUpdate() override;  // SOFA framework 안에서 사용되는 타이머
   void reinit() override;
   void cleanup() override;
+
+  void PausedChanged();
+  void PauseTrackerChanged();
+  void CamIdxChanged();
+
+  void grabFrame();     // 다음 frame을 camera에서 읽는 함수
+  sofa::defaulttype::Mat4x4d armaToSofaMat(const arma::mat& mat);  // arma matrix를 sofa 4*4 matrix로 변환
+
+  // 가상의 depth map을 받아오기 위한 링크 설정
+  //void setVirtualDepthLink(const std::string& o) { mVirtualDepthState.setPath(o); }
 
  private:
   int m_camIdx;            // 사용하는 camera의 인덱스 (cv camera 사용할 때만 필요)
@@ -109,16 +136,11 @@ class SOFA_SOFACV_API VideoGrabber : public BaseFrameGrabber
   std::string stSerial;     // 현재 연결되 Realsense의 시리얼 번호
 
   cv::Mat image;
-  cv::Mat depth_mat;
   cv::Mat reconPoints;
 
- public:
-  void PausedChanged();
-  void PauseTrackerChanged();
-  void CamIdxChanged();
-
-  void grabFrame();     // 다음 frame을 camera에서 읽는 함수
-  sofa::defaulttype::Mat4x4d armaToSofaMat(const arma::mat& mat);  // arma matrix를 sofa 4*4 matrix로 변환
+//protected:
+//	sofa::core::objectmodel::SingleLink<VideoGrabber, sofa::core::behavior::MechanicalState<Vec3Types>,
+//		sofa::core::objectmodel::BaseLink::FLAG_STOREPATH | sofa::core::objectmodel::BaseLink::FLAG_STRONGLINK> mVirtualDepthState;
 };
 
 }  // namespace video
