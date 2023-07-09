@@ -350,7 +350,7 @@ namespace sofacv
                 float norm = static_cast<float>((p2 - p1).norm());  // 화살표 굵기
 
                 // 화살표를 그린다
-                vparams->drawTool()->drawArrow(p1, p2, norm / 20.0f, sofa::helper::types::RGBAColor(1.0f, 0.35f, 0.35f, 1.0f));
+                //vparams->drawTool()->drawArrow(p1, p2, norm / 20.0f, sofa::helper::types::RGBAColor(1.0f, 0.35f, 0.35f, 1.0f));
             }
         }
         vparams->drawTool()->restoreLastState();
