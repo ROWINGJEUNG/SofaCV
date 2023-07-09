@@ -264,7 +264,8 @@ namespace sofacv
                 icp.fit(T, modelSize, R, t, 120);  // 120 mm 거리 안의 점들에 대해서만 ICP 적용
             }
 
-            // depth map에 대해 10~120 mm 안에 존재하는 knee surface 점들
+            // depth map에 대해 지정된 범위 안에 존재하는 knee surface 점들 
+            // 범위를 0.1 ~ 20 으로 한번 변경해 볼가?
             std::vector<int32_t> sourceInliers = icp.getRanges(T, modelSize, R, t, 0.1, 10);
             // 각 knee surface 점에 대해 가장 가까운 depth map 위 점
             std::vector<int32_t> targetNearestPointsIdx = icp.getNearestIdxs(T, modelSize, R, t);

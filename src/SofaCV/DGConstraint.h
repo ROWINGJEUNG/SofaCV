@@ -48,9 +48,6 @@ namespace sofacv
 		// ICP의 결과를 적용할 MechanicalObject 설정
 		void setPathMstateParent(const std::string& o) { mstateParent.setPath(o); }
 
-		//// ICP에 필요한 데이터를 가져올 MechanicalObject 설정
-		//void setPathMObjectICPTarget(const std::string& o) { mObjectICPTarget.setPath(o); }
-
 		// Drillguide 시각화에 사용할 MechanicalObject
 		void setPathMObjectDrill(const std::string& o) { mObjectDrill.setPath(o); }
 
@@ -80,10 +77,6 @@ namespace sofacv
 		// ICP의 결과를 적용할 MechanicalObject
 		sofa::core::objectmodel::SingleLink<DGConstraintForceField, sofa::core::behavior::MechanicalState<Vec3Types>,
 			sofa::core::objectmodel::BaseLink::FLAG_STOREPATH|sofa::core::objectmodel::BaseLink::FLAG_STRONGLINK> mstateParent;
-
-		//// ICP에 필요한 데이터를 가져올 MechanicalObject
-		//sofa::core::objectmodel::SingleLink<DGConstraintForceField, sofa::core::behavior::MechanicalState<Vec3Types>,
-		//	sofa::core::objectmodel::BaseLink::FLAG_STOREPATH | sofa::core::objectmodel::BaseLink::FLAG_STRONGLINK> mObjectICPTarget;
 
 		// Timer 설정에 필요한 함수 및 변수들
 		bool m_hasScheduler{ false };  /// If this grabber is controlled by a scheduler
