@@ -2,7 +2,7 @@
 
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/helper/visual/DrawTool.h>
-#include <sofa/helper/system/gl.h>
+#include <sofa/gl/gl.h>
 
 namespace sofacv
 {
@@ -34,7 +34,7 @@ void PCViewer::init()
 void PCViewer::doUpdate()
 {
   m_positions = d_positions.getValue();
-  const sofa::helper::vector<Vec3b>& c = d_colors.getValue();
+  const sofa::type::vector<Vec3b>& c = d_colors.getValue();
   m_colors.resize(c.size());
   for (size_t i = 0; i < c.size(); ++i)
     m_colors[i].set(c[i][2] / 255.0f, c[i][1] / 255.0f, c[i][0] / 255.0f, 1.0f);
@@ -53,14 +53,14 @@ void PCViewer::computeBBox(const sofa::core::ExecParams* , bool)
 
   for (unsigned int i = 0; i < m_positions.size(); i++)
   {
-    const sofa::defaulttype::Vector3& p = m_positions[i];
+    const sofa::type::Vector3& p = m_positions[i];
     for (int c = 0; c < 3; c++)
     {
       if (p[c] > maxBBox[c]) maxBBox[c] = p[c];
       if (p[c] < minBBox[c]) minBBox[c] = p[c];
     }
   }
-  this->f_bbox.setValue(sofa::defaulttype::TBoundingBox<double>(minBBox, maxBBox));
+  this->f_bbox.setValue(sofa::type::TBoundingBox<double>(minBBox, maxBBox));
 }
 
 void PCViewer::draw(const sofa::core::visual::VisualParams*)
@@ -82,7 +82,7 @@ void PCViewer::draw(const sofa::core::visual::VisualParams*)
   }
   else if (d_colors.isSet())
   {
-    const sofa::helper::vector<Vec3b>& colors = d_colors.getValue();
+    const sofa::type::vector<Vec3b>& colors = d_colors.getValue();
     for (size_t i = 0; i < m_positions.size(); ++i)
     {
       Vector3 pt = m_positions[i];

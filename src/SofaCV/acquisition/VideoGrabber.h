@@ -26,24 +26,23 @@
 #include "SofaCV/ImplicitDataEngine.h"
 #include "SofaCV/SofaCVPlugin.h"
 
-#include <sofa/defaulttype/Vec.h>
 #include <sofa/helper/OptionsGroup.h>
 #include <sofa/core/objectmodel/DataFileName.h>
 #include "BaseFrameGrabber.h"
 
 // data type 정의하기 위한 헤더 가져옴
-#include <sofa/defaulttype/Vec.h>
+#include <sofa/type/Vec.h>
 #include <sofa/defaulttype/VecTypes.h>
 using sofa::defaulttype::Vec3Types;
-using Coord3 = sofa::defaulttype::Vector3;
-using VecCoord3 = sofa::helper::vector<Coord3>;
+using Coord3 = sofa::type::Vector3;
+using VecCoord3 = sofa::type::vector<Coord3>;
 
 // 기타 필요 SOFA 헤더 가져옴
-#include <SofaBaseVisual/VisualModelImpl.h>
+#include <sofa/component/visual/VisualModelImpl.h>
 #include <sofa/helper/OptionsGroup.h>
-#include <sofa/helper/Quater.h>
+#include <sofa/type/quat.h>
 #include <sofa/helper/AdvancedTimer.h>
-#include <SofaBoundaryCondition/FixedConstraint.h>
+#include <sofa/component/constraint/projective/FixedConstraint.h>
 
 #include <opencv2/opencv.hpp>
 
@@ -51,11 +50,11 @@ using VecCoord3 = sofa::helper::vector<Coord3>;
 #include <thread>
 #include <string>
 
-// OTS 관련 헤더
-#include <DtTracker/Tracker.h>
-#include <DtCameraInterface/BaslerCamera.h>
-#include <DtCameraInterface/StereoCamera.h>
-#include <DtBlobDetection/BlobDetection.h>
+// OTS 관련 헤더 -> 지금은 사용하지 않음
+//#include <DtTracker/Tracker.h>
+//#include <DtCameraInterface/BaslerCamera.h>
+//#include <DtCameraInterface/StereoCamera.h>
+//#include <DtBlobDetection/BlobDetection.h>
 
 // Realsense 관련 헤더
 #include <librealsense2/rs.hpp>
@@ -78,17 +77,17 @@ class SOFA_SOFACV_API VideoGrabber : public BaseFrameGrabber
  public:
   sofa::Data<int> d_camIdx;     // [INTPUT] Index of the capturing device to open
   sofa::Data<bool> d_paused;    // [INTPUT] Toggle play / pause
-  sofa::Data<sofa::defaulttype::Vec2i> d_resolution;  // [property] To set specific camera grabbing resolution
+  sofa::Data<sofa::type::Vec2i> d_resolution;  // [property] To set specific camera grabbing resolution
 
   //tracker 관련 sofa-gui 변수
   sofa::Data<bool> d_pauseTracker;                     // Toggle tracker play / pause
-  sofa::Data<sofa::defaulttype::Mat4x4d> d_cameraPos;  // tracker to camera pos
+  sofa::Data<sofa::type::Mat4x4d> d_cameraPos;  // tracker to camera pos
   sofa::Data<double> d_cameraPosErr;                   // tracker to camera pos error
-  sofa::Data<sofa::defaulttype::Mat4x4d> d_patientPos; // tracker to patient pos
+  sofa::Data<sofa::type::Mat4x4d> d_patientPos; // tracker to patient pos
   sofa::Data<double> d_patientPosErr;                  // tracker to patient pos error
-  sofa::Data<sofa::defaulttype::Mat4x4d> d_boardPos;   // tracker to board pos
+  sofa::Data<sofa::type::Mat4x4d> d_boardPos;   // tracker to board pos
   sofa::Data<double> d_boardPosErr;                    // tracker to board pos error
-  sofa::Data<sofa::defaulttype::Mat4x4d> d_toolPos;    // tracker to tool pos
+  sofa::Data<sofa::type::Mat4x4d> d_toolPos;    // tracker to tool pos
   sofa::Data<double> d_toolPosErr;                     // tracker to tool pos error
 
   // 현재 frame에서 조건에 부합하는 recon point 개수
@@ -113,7 +112,7 @@ class SOFA_SOFACV_API VideoGrabber : public BaseFrameGrabber
   void CamIdxChanged();
 
   void grabFrame();     // 다음 frame을 camera에서 읽는 함수
-  sofa::defaulttype::Mat4x4d armaToSofaMat(const arma::mat& mat);  // arma matrix를 sofa 4*4 matrix로 변환
+  //sofa::type::Mat4x4d armaToSofaMat(const arma::mat& mat);  // arma matrix를 sofa 4*4 matrix로 변환
 
   // 가상의 depth map을 받아오기 위한 링크 설정
   //void setVirtualDepthLink(const std::string& o) { mVirtualDepthState.setPath(o); }

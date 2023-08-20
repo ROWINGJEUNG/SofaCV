@@ -63,7 +63,7 @@ namespace sofacv
 
             // Initialize functions and parameters for topology data and handler
             d_indices.createTopologyHandler(_topology);
-            d_indices.registerTopologicalData();
+            //d_indices.registerTopologicalData();
 
             m_systemSize = _topology->getNbPoints();
         }
@@ -271,7 +271,7 @@ namespace sofacv
             std::vector<int32_t> targetNearestPointsIdx = icp.getNearestIdxs(T, modelSize, R, t);
 
             // 각 점에 작용되는 외력을 저장하는 vector 선언
-            sofa::helper::vector<sofa::type::Vec3d> totalForceVec;
+            sofa::type::vector<sofa::type::Vec3d> totalForceVec;
             sofa::core::topology::BaseMeshTopology::VerticesAroundVertex totalIndices;
 
             // knee surface의 각 점에 적용되는 힘을 계산하기 위한 밑준비
@@ -321,16 +321,16 @@ namespace sofacv
             sofa::type::Vec<3U, Real> Iox = sofa::type::Vec<3U, Real>(R.val[0][0], R.val[1][0], R.val[2][0]);
             sofa::type::Vec<3U, Real> Ioy = sofa::type::Vec<3U, Real>(R.val[0][1], R.val[1][1], R.val[2][1]);
             sofa::type::Vec<3U, Real> Ioz = sofa::type::Vec<3U, Real>(R.val[0][2], R.val[1][2], R.val[2][2]);
-            sofa::defaulttype::Quaternion q = sofa::helper::Quater<SReal>::createQuaterFromFrame(Iox, Ioy, Ioz);
+            sofa::type::Quatd q = sofa::type::Quat<SReal>::createQuaterFromFrame(Iox, Ioy, Ioz);
             sofa::helper::WriteAccessor<sofa::core::objectmodel::Data<VecCoord>> x_wA = this->mstateParent->write(sofa::core::VecCoordId::position());
 
             for (unsigned int i = 0; i < x_wA.size(); i++)
             {
-                sofa::defaulttype::Vec<3, Real> pos;
+                sofa::type::Vec<3, Real> pos;
                 DataTypes::get(pos[0], pos[1], pos[2], x_wA[i]);
 
                 // rotation 적용
-                sofa::defaulttype::Vec<3, Real> newposition = q.rotate(pos);
+                sofa::type::Vec<3, Real> newposition = q.rotate(pos);
                 // translation 적용
                 DataTypes::set(x_wA[i], newposition[0] + t.val[0][0], newposition[1] + t.val[1][0] - 2, newposition[2] + t.val[2][0]);
             }
@@ -356,15 +356,15 @@ namespace sofacv
             realSenseData = d_reconFrame.getValue();
 
             int iterNum = realSenseData.size().width;
-            std::vector<sofa::defaulttype::Vector3> points;
+            std::vector<sofa::type::Vector3> points;
 
             long i = 0;
             for (i; i < iterNum; ++i)
             {
                 cv::Vec3d point = realSenseData.at<cv::Vec3d>(cv::Point(i, 0));
-                points.push_back(sofa::defaulttype::Vector3(point[0], point[1], point[2]));
+                points.push_back(sofa::type::Vector3(point[0], point[1], point[2]));
             }
-            vparams->drawTool()->drawSpheres(points, 1, sofa::helper::types::RGBAColor(1.0f, 0.35f, 0.35f, 1.0f));
+            vparams->drawTool()->drawSpheres(points, 1, sofa::type::RGBAColor(1.0f, 0.35f, 0.35f, 1.0f));
         }
 
         // 모델에 가해지는 힘의 크기와 방향을 시각화하는 부분
@@ -419,14 +419,14 @@ namespace sofacv
 
                 DataTypes::get(fx, fy, fz, f[i]);
 
-                sofa::defaulttype::Vector3 p1(xx, xy, xz);  // 화살표 시작점
+                sofa::type::Vector3 p1(xx, xy, xz);  // 화살표 시작점
                         
-                sofa::defaulttype::Vector3 p2(aSC * fx + xx, aSC * fy + xy, aSC * fz + xz);  //화살표 끝점
+                sofa::type::Vector3 p2(aSC * fx + xx, aSC * fy + xy, aSC * fz + xz);  //화살표 끝점
 
                 float norm = static_cast<float>((p2 - p1).norm());  // 화살표 굵기
 
                 // 화살표를 그린다
-                vparams->drawTool()->drawArrow(p1, p2, norm / 20.0f, sofa::helper::types::RGBAColor(1.0f, 0.35f, 0.35f, 1.0f));
+                vparams->drawTool()->drawArrow(p1, p2, norm / 20.0f, sofa::type::RGBAColor(1.0f, 0.35f, 0.35f, 1.0f));
             }
         }
         vparams->drawTool()->restoreLastState();

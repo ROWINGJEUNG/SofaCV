@@ -46,7 +46,7 @@ VideoGrabber::VideoGrabber(sofa::core::behavior::MechanicalState<Vec3Types>* mPa
       // 초기 카메라 in
       d_camIdx(initData(&d_camIdx, 0, "cam_index", "camera device index")),
       d_paused(initData(&d_paused, false, "pause_camera", "if true, stops grabbing")),
-      d_resolution(initData(&d_resolution, sofa::defaulttype::Vec2i(1280, 720),
+      d_resolution(initData(&d_resolution, sofa::type::Vec2i(1280, 720),
                             "resolution", "grabbing resolution to set")),
 
     d_pauseTracker(initData(&d_pauseTracker, false, "pause_tracker", "if true, pause tracker")),
@@ -91,7 +91,7 @@ void VideoGrabber::init()
   m_RSpipe.start(m_RSconfig);
   d_fps.setValue(30);  // BaseFrameGrabber에 정의된 d_fps 설정 (output)
 
-  sofa::defaulttype::Vec2i dims;
+  sofa::type::Vec2i dims;
   dims[0] = static_cast<int>(1280);
   dims[1] = static_cast<int>(720);
   d_dimensions.setValue(dims);  // BaseFrameGrabber에 정의된 d_dimensions 설정 (output)
@@ -335,19 +335,19 @@ void VideoGrabber::cleanup()
 {
 }
 
-// arma::mat -> sofa::defaulttype::Mat4x4d
-sofa::defaulttype::Mat4x4d VideoGrabber::armaToSofaMat(const arma::mat& mat)
-{
-    sofa::defaulttype::Mat4x4d tempCameraPose;
-    for (int row = 0; row < 4; row++)
-    {
-        for (int col = 0; col < 4; col++)
-        {
-            tempCameraPose.elems[row][col] = mat.at(row, col);
-        }
-    }
-    return tempCameraPose;
-}
+// arma::mat -> sofa::type::Mat4x4d
+//sofa::type::Mat4x4d VideoGrabber::armaToSofaMat(const arma::mat& mat)
+//{
+//    sofa::type::Mat4x4d tempCameraPose;
+//    for (int row = 0; row < 4; row++)
+//    {
+//        for (int col = 0; col < 4; col++)
+//        {
+//            tempCameraPose.elems[row][col] = mat.at(row, col);
+//        }
+//    }
+//    return tempCameraPose;
+//}
 
 VideoGrabber::~VideoGrabber() {}
 

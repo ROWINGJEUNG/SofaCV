@@ -169,52 +169,52 @@ class ImageFilter : public ImplicitDataEngine
 
   /// @see void registerData(sofa::Data<uchar>* data, uchar min, uchar max,
   /// uchar step)
-  void registerData(sofa::Data<sofa::defaulttype::Vec2u>* data, unsigned min,
+  void registerData(sofa::Data<sofa::type::Vec2u>* data, unsigned min,
                     unsigned max, unsigned step = 1);
   /// @see void registerData(sofa::Data<uchar>* data, uchar min, uchar max,
   /// uchar step)
-  void registerData(sofa::Data<sofa::defaulttype::Vec3u>* data, unsigned min,
+  void registerData(sofa::Data<sofa::type::Vec3u>* data, unsigned min,
                     unsigned max, unsigned step = 1);
   /// @see void registerData(sofa::Data<uchar>* data, uchar min, uchar max,
   /// uchar step)
-  void registerData(sofa::Data<sofa::defaulttype::Vec4u>* data, unsigned min,
+  void registerData(sofa::Data<sofa::type::Vec4u>* data, unsigned min,
                     unsigned max, unsigned step = 1);
   /// @see void registerData(sofa::Data<uchar>* data, uchar min, uchar max,
   /// uchar step)
-  void registerData(sofa::Data<sofa::defaulttype::Vec2i>* data, int min,
+  void registerData(sofa::Data<sofa::type::Vec2i>* data, int min,
                     int max, int step = 1);
   /// @see void registerData(sofa::Data<uchar>* data, uchar min, uchar max,
   /// uchar step)
-  void registerData(sofa::Data<sofa::defaulttype::Vec3i>* data, int min,
+  void registerData(sofa::Data<sofa::type::Vec3i>* data, int min,
                     int max, int step = 1);
   /// @see void registerData(sofa::Data<uchar>* data, uchar min, uchar max,
   /// uchar step)
-  void registerData(sofa::Data<sofa::defaulttype::Vec4i>* data, int min,
+  void registerData(sofa::Data<sofa::type::Vec4i>* data, int min,
                     int max, int step = 1);
   /// @see void registerData(sofa::Data<uchar>* data, uchar min, uchar max,
   /// uchar step)
-  void registerData(sofa::Data<sofa::defaulttype::Vec2f>* data, float min,
+  void registerData(sofa::Data<sofa::type::Vec2f>* data, float min,
                     float max, float step = 1.0f);
   /// @see void registerData(sofa::Data<uchar>* data, uchar min, uchar max,
   /// uchar step)
-  void registerData(sofa::Data<sofa::defaulttype::Vec3f>* data, float min,
+  void registerData(sofa::Data<sofa::type::Vec3f>* data, float min,
                     float max, float step = 1.0f);
   /// @see void registerData(sofa::Data<uchar>* data, uchar min, uchar max,
   /// uchar step)
-  void registerData(sofa::Data<sofa::defaulttype::Vec4f>* data, float min,
+  void registerData(sofa::Data<sofa::type::Vec4f>* data, float min,
                     float max, float step = 1.0f);
 
   /// @see void registerData(sofa::Data<uchar>* data, uchar min, uchar max,
   /// uchar step)
-  void registerData(sofa::Data<sofa::defaulttype::Vec2d>* data, double min,
+  void registerData(sofa::Data<sofa::type::Vec2d>* data, double min,
                     double max, double step = 1.0);
   /// @see void registerData(sofa::Data<uchar>* data, uchar min, uchar max,
   /// uchar step)
-  void registerData(sofa::Data<sofa::defaulttype::Vec3d>* data, double min,
+  void registerData(sofa::Data<sofa::type::Vec3d>* data, double min,
                     double max, double step = 1.0);
   /// @see void registerData(sofa::Data<uchar>* data, uchar min, uchar max,
   /// uchar step)
-  void registerData(sofa::Data<sofa::defaulttype::Vec4d>* data, double min,
+  void registerData(sofa::Data<sofa::type::Vec4d>* data, double min,
                     double max, double step = 1.0);
 
   /// unregisters all data passed through @see registerData() for the Debug UI

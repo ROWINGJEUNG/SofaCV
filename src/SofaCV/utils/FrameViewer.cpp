@@ -4,8 +4,8 @@
 #include <sofa/gl/DrawToolGL.h>
 
 #include <sofa/helper/AdvancedTimer.h>
-#include <sofa/helper/gl/RAII.h>
-#include <sofa/helper/system/gl.h>
+#include <sofa/gl/RAII.h>
+#include <sofa/gl/gl.h>
 #include <sofa/simulation/AnimateBeginEvent.h>
 
 // draw 안에 변수로 들어가는 visualparams를 사용하려면 이 해더를 include 해야한다.
@@ -119,7 +119,7 @@ void FrameViewer::perspectiveDraw()
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   //	glDepthMask(GL_FALSE);
 
-  sofa::helper::vector<sofa::defaulttype::Vector3> p = d_corners.getValue();
+  sofa::type::vector<sofa::type::Vector3> p = d_corners.getValue();
 
   glBegin(GL_QUADS);
   glColor4f(1.0f, 1.0f, 1.0f, d_alpha.getValue());
@@ -212,7 +212,7 @@ void FrameViewer::computeBBox(const sofa::core::ExecParams *, bool)
 {
   if (d_mode.getValue().getSelectedId() != 0) return;
 
-  const sofa::helper::vector<sofa::defaulttype::Vector3> &x =
+  const sofa::type::vector<sofa::type::Vector3> &x =
       d_corners.getValue();
   if (x.empty()) return;
 
@@ -225,14 +225,14 @@ void FrameViewer::computeBBox(const sofa::core::ExecParams *, bool)
 
   for (unsigned int i = 0; i < x.size(); i++)
   {
-    const sofa::defaulttype::Vector3 &p = x[i];
+    const sofa::type::Vector3 &p = x[i];
     for (int c = 0; c < 3; c++)
     {
       if (p[c] > maxBBox[c]) maxBBox[c] = p[c];
       if (p[c] < minBBox[c]) minBBox[c] = p[c];
     }
   }
-  this->f_bbox.setValue(sofa::defaulttype::TBoundingBox<double>(minBBox, maxBBox));
+  this->f_bbox.setValue(sofa::type::TBoundingBox<double>(minBBox, maxBBox));
 }
 
 }  // namespace utils

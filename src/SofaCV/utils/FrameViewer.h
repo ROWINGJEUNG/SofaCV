@@ -5,9 +5,9 @@
 #include "SofaCV/ImplicitDataEngine.h"
 #include "SofaCV/datatypes/cvMat.h"
 
-#include <SofaBaseVisual/VisualModelImpl.h>
+#include <sofa/component/visual/VisualModelImpl.h>
 #include <sofa/helper/OptionsGroup.h>
-#include <sofa/helper/Quater.h>
+#include <sofa/type/Quat.h>
 
 namespace sofacv
 {
@@ -35,7 +35,7 @@ class SOFA_SOFACV_API FrameViewer : virtual public ImplicitDataEngine
 
     sofa::Data<cvMat> d_frame;
 	sofa::Data<cvMat> d_reconFrame;
-	sofa::Data<sofa::helper::vector<sofa::defaulttype::Vector3> > d_corners;
+	sofa::Data<sofa::type::vector<sofa::type::Vector3> > d_corners;
 	sofa::Data<sofa::helper::OptionsGroup> d_mode;
 	sofa::Data<float> d_alpha;
 

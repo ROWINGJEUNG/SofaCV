@@ -55,7 +55,7 @@ namespace sofacv
 
             // Initialize functions and parameters for topology data and handler
             d_indices.createTopologyHandler(_topology);
-            d_indices.registerTopologicalData();
+            //d_indices.registerTopologicalData();
 
             m_systemSize = _topology->getNbPoints();
         }
@@ -223,7 +223,7 @@ namespace sofacv
             Real forceZW1 = w1[2] / PCAbaseW1;
 
             // 각 점에 작용되는 외력을 저장하는 vector 선언
-            sofa::helper::vector<sofa::type::Vec3d> totalForceVec;
+            sofa::type::vector<sofa::type::Vec3d> totalForceVec;
             sofa::core::topology::BaseMeshTopology::VerticesAroundVertex totalIndices;
 
             if (forceX > 0)    // PCA vector W3의 방향을 항상 일정하게 유지하기 위해 사용
@@ -279,7 +279,7 @@ namespace sofacv
         }
         else  // 변형이 충분히 되어서 필요 없을 때 Femur에 더이상 힘을 주지 않는다
         {
-            sofa::helper::vector<sofa::type::Vec3d> totalForceVec;
+            sofa::type::vector<sofa::type::Vec3d> totalForceVec;
             sofa::core::topology::BaseMeshTopology::VerticesAroundVertex totalIndices;
             totalForceVec.push_back({ 0, 0, 0 });
             totalIndices.push_back(0);
@@ -343,9 +343,9 @@ namespace sofacv
 
                 DataTypes::get(fx, fy, fz, f[i]);
 
-                sofa::defaulttype::Vector3 p1(xx, xy, xz);  // 화살표 시작점
+                sofa::type::Vector3 p1(xx, xy, xz);  // 화살표 시작점
 
-                sofa::defaulttype::Vector3 p2(aSC * fx + xx, aSC * fy + xy, aSC * fz + xz);  //화살표 끝점
+                sofa::type::Vector3 p2(aSC * fx + xx, aSC * fy + xy, aSC * fz + xz);  //화살표 끝점
 
                 float norm = static_cast<float>((p2 - p1).norm());  // 화살표 굵기
 

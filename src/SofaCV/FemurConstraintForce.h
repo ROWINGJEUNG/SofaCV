@@ -2,7 +2,7 @@
 #define SOFACV_FEMURCONSTRAINTFORCE_H
 
 // 필요한 forcefield 해더 가져옴
-#include <SofaBoundaryCondition/ConstantForceField.h>
+#include <sofa/component/mechanicalload/ConstantForceField.h>
 
 // data type 정의하기 위한 헤더 가져옴
 #include <sofa/defaulttype/VecTypes.h>
@@ -16,11 +16,11 @@ using sofa::defaulttype::Rigid3Types;
 #include "SofaCV/datatypes/cvMat.h"
 
 // 기타 필요 헤더 가져옴
-#include <SofaBaseVisual/VisualModelImpl.h>
+#include <sofa/component/visual/VisualModelImpl.h>
 #include <sofa/helper/OptionsGroup.h>
-#include <sofa/helper/Quater.h>
+#include <sofa/type/Quat.h>
 #include <sofa/helper/AdvancedTimer.h>
-#include <SofaBoundaryCondition/FixedConstraint.h>
+#include <sofa/component/constraint/projective/FixedConstraint.h>
 
 // event 처리 위한 헤더
 #include <sofa/core/objectmodel/KeypressedEvent.h>
@@ -34,7 +34,7 @@ using sofa::defaulttype::Rigid3Types;
 
 namespace sofacv
 {
-	class SOFA_SOFACV_API FemurConstraintForce : public sofa::component::forcefield::ConstantForceField<Vec3Types>, virtual public ImplicitDataEngine
+	class SOFA_SOFACV_API FemurConstraintForce : public sofa::component::mechanicalload::ConstantForceField<Vec3Types>, virtual public ImplicitDataEngine
 	{
 	public:
 		SOFA_CLASS(FemurConstraintForce, ConstantForceField<Vec3Types>);

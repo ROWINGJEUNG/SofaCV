@@ -7,7 +7,7 @@
 
 #include "BaseGrabber.h"
 
-#include <sofa/defaulttype/Vec.h>
+#include <sofa/type/Vec.h>
 #include <sofa/helper/OptionsGroup.h>
 
 namespace sofacv
@@ -34,7 +34,7 @@ class SOFA_SOFACV_API BaseFrameGrabber : virtual public BaseGrabber
   // cv::CAP_PROPS
   sofa::Data<double> d_fps;  ///< [OUTPUT] Video frequency, if the device
                              /// provides the information
-  sofa::Data<sofa::defaulttype::Vec2u>
+  sofa::Data<sofa::type::Vec2u>
       d_dimensions;  ///< [OUTPUT] Dimensions of the grabbed image
 
  public:

@@ -1,7 +1,7 @@
 #include "SofaCVPlugin.h"
 #include <sofa/config.h>
 #include <sofa/helper/system/FileRepository.h>
-#include <sofa/helper/system/config.h>
+//#include <sofa/helper/system/config.h>
 
 #ifdef QT_PLUGIN
 #include <gui/ImageFilterDisplay.h>
@@ -75,7 +75,7 @@ void initExternalModule()
 }
 
 const char* getModuleName() { return "SofaCV"; }
-const char* getModuleVersion() { return SofaCV_VERSION; }
+const char* getModuleVersion() { return ""; }
 const char* getModuleLicense() { return ""; }
 const char* getModuleDescription()
 {

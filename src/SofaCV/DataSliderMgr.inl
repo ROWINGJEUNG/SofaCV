@@ -44,7 +44,7 @@ CustomSliderManager<sofa::helper::OptionsGroup, int>::CustomSliderManager(
 
 template <unsigned int N, class U>
 VecSliderManager<N, U>::VecSliderManager(
-    sofa::Data<sofa::defaulttype::Vec<N, U> >* d, U min, U max, U step)
+    sofa::Data<sofa::type::Vec<N, U> >* d, U min, U max, U step)
 {
   this->m_data = d;
   this->m_min = min;

@@ -10,8 +10,8 @@ namespace utils
 {
 class SOFA_SOFACV_API PCViewer : public ImplicitDataEngine
 {
-	typedef sofa::defaulttype::Vector3 Vector3;
-	typedef sofa::defaulttype::Vec<3, uint8_t> Vec3b;
+	typedef sofa::type::Vector3 Vector3;
+	typedef sofa::type::Vec<3, uint8_t> Vec3b;
 
  public:
     SOFA_CLASS(PCViewer, ImplicitDataEngine);
@@ -28,12 +28,12 @@ class SOFA_SOFACV_API PCViewer : public ImplicitDataEngine
 
 	sofa::Data<double> d_size;
 	// INPUTS
-	sofa::Data<sofa::helper::vector<Vector3> > d_positions;
-	sofa::Data<sofa::helper::vector<Vec3b> > d_colors;
+	sofa::Data<sofa::type::vector<Vector3> > d_positions;
+	sofa::Data<sofa::type::vector<Vec3b> > d_colors;
     sofa::Data<Vec3b> d_color;
 
  private:
-	std::vector<sofa::defaulttype::Vec4f> m_colors;
+	std::vector<sofa::type::Vec4f> m_colors;
 	std::vector<Vector3> m_positions;
 };
 

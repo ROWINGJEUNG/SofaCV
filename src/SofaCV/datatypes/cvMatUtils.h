@@ -1,7 +1,7 @@
 #ifndef SOFACV_CVMATUTILS_H
 #define SOFACV_CVMATUTILS_H
 
-#include <sofa/defaulttype/Mat.h>
+#include <sofa/type/Mat.h>
 #include <sofa/type/vector.h>
 
 #include <opencv2/core.hpp>

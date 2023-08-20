@@ -71,7 +71,7 @@ struct CustomSliderManager : DSM
 template <unsigned int N, class U>
 struct VecSliderManager : DSM
 {
-  VecSliderManager(sofa::Data<sofa::defaulttype::Vec<N, U> >* d, U min = U(0),
+  VecSliderManager(sofa::Data<sofa::type::Vec<N, U> >* d, U min = U(0),
                    U max = U(255), U step = U(1));
   ~VecSliderManager() {}
 
@@ -88,7 +88,7 @@ struct VecSliderManager : DSM
   static void callback_z(int val, void* mgr);
   static void callback_w(int val, void* mgr);
 
-  sofa::Data<sofa::defaulttype::Vec<N, U> >* m_data;
+  sofa::Data<sofa::type::Vec<N, U> >* m_data;
   U m_min, m_max, m_step;
 };
 
